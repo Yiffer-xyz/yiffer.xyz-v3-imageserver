@@ -4,3 +4,5 @@ dist
 coverage
 .vscode
 .idea
+build
+data

@@ -5,33 +5,19 @@ import {
   BASE_THUMB_HEIGHT,
   MULTIPLIERS_TO_MAKE_THUMBNAILS,
   MAX_PAGE_WIDTH,
-} from './constants';
-import s3Client from './s3';
-import {
-  DeleteObjectsCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-} from '@aws-sdk/client-s3';
+} from '../constants';
+import { sendThumbnailFilesToR2, sendPageFilesToR2 } from './cloudflare-page-saver';
+import { PageForUpload, ThumbnailForUpload } from '../types';
+import { deleteComicFromR2 } from '../comic-delete/cloudflare-comic-delete';
+import { savePageFilesLocally, saveThumbnailFilesLocally } from './local-page-saver';
+import { deleteComicLocally } from '../comic-delete/local-comic-delete';
 
-type ThumbnailForUpload = {
-  buffer: Buffer;
-  multiplier: number;
-  fileType: string;
-  filenameBase: string;
-};
-
-type PageForUpload = {
-  buffer: Buffer;
-  fileType: string;
-  newFileName: string;
-};
-
-function fileTypeToMime(fileType: string): string {
-  if (fileType === 'webp') {
-    return 'image/webp';
-  }
-  return 'image/jpeg';
-}
+const savePageFilesFunc =
+  process.env.LOCAL_DEV === 'true' ? savePageFilesLocally : sendPageFilesToR2;
+const saveThumbnailFilesFunc =
+  process.env.LOCAL_DEV === 'true' ? saveThumbnailFilesLocally : sendThumbnailFilesToR2;
+const deleteComicFunc =
+  process.env.LOCAL_DEV === 'true' ? deleteComicLocally : deleteComicFromR2;
 
 export async function handleUpload(req: Request, res: Response) {
   if (!req.files) {
@@ -49,16 +35,16 @@ export async function handleUpload(req: Request, res: Response) {
   const thumbnailFiles = req.files['thumbnail'] as Express.Multer.File[];
 
   const thumbnailObjects = await processThumbnailFile(thumbnailFiles[0]);
-  const thumbnailSuccess = await sendThumbnailFilesToR2(comicName, thumbnailObjects);
+  const thumbnailSuccess = await saveThumbnailFilesFunc(comicName, thumbnailObjects);
   if (!thumbnailSuccess) {
-    await deleteComicFromR2(comicName);
+    await deleteComicFunc(comicName);
     return res.status(500).send('Failed to upload thumbnail files to R2.');
   }
 
   const pageObjects = await processPageFiles(pageFiles);
-  const pageSuccess = await sendPageFilesToR2(comicName, pageObjects);
+  const pageSuccess = await savePageFilesFunc(comicName, pageObjects);
   if (!pageSuccess) {
-    await deleteComicFromR2(comicName);
+    await deleteComicFunc(comicName);
     return res.status(500).send('Failed to upload page files to R2.');
   }
 
@@ -135,64 +121,4 @@ async function processPageFiles(files: Express.Multer.File[]): Promise<PageForUp
 
 function makePageFilename(originalFilename: string, newFileType: string) {
   return originalFilename.replace(/\..+$/, `.${newFileType}`);
-}
-
-async function sendThumbnailFilesToR2(
-  comicName: string,
-  pagesObjects: ThumbnailForUpload[]
-): Promise<boolean> {
-  const uploadPromises = pagesObjects.map(
-    ({ buffer, multiplier, fileType, filenameBase }) => {
-      const putObjectCommand = new PutObjectCommand({
-        Bucket: process.env.COMICS_BUCKET_NAME,
-        Key: `${comicName}/${filenameBase}-${multiplier}x.${fileType}`,
-        Body: buffer,
-        ContentType: fileTypeToMime(fileType),
-      });
-      return s3Client.send(putObjectCommand);
-    }
-  );
-
-  const results = await Promise.allSettled(uploadPromises);
-  const anyFailed = results.some(result => result.status === 'rejected');
-
-  return !anyFailed;
-}
-
-async function sendPageFilesToR2(
-  comicName: string,
-  pagesObjects: PageForUpload[]
-): Promise<boolean> {
-  const uploadPromises = pagesObjects.map(({ buffer, fileType, newFileName }) => {
-    const putObjectCommand = new PutObjectCommand({
-      Bucket: process.env.COMICS_BUCKET_NAME,
-      Key: `${comicName}/${newFileName}`,
-      Body: buffer,
-      ContentType: fileTypeToMime(fileType),
-    });
-    return s3Client.send(putObjectCommand);
-  });
-
-  const results = await Promise.allSettled(uploadPromises);
-  const anyFailed = results.some(result => result.status === 'rejected');
-
-  return !anyFailed;
-}
-
-async function deleteComicFromR2(comicName: string) {
-  const listCommand = new ListObjectsV2Command({
-    Bucket: process.env.COMICS_BUCKET_NAME,
-    Prefix: `${comicName}/`,
-  });
-  const listResponse = await s3Client.send(listCommand);
-  if (!listResponse.Contents) return;
-
-  const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
-  const deleteCommand = new DeleteObjectsCommand({
-    Bucket: process.env.COMICS_BUCKET_NAME,
-    Delete: {
-      Objects: objects,
-    },
-  });
-  await s3Client.send(deleteCommand);
 }
