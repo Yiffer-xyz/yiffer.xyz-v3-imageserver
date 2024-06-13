@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, Yiffer Images Server!');
+  res.send('Hello, Yiffer Images Server 👋');
 });
 
 app.post(
@@ -36,4 +36,5 @@ app.get('/error-log', serveErrorLogs);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+  console.log(`Local dev: ${process.env.LOCAL_DEV}`);
 });

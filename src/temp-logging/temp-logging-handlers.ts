@@ -16,6 +16,7 @@ export async function handleErrorLog(req: Request, res: Response) {
   }
 
   const error = req.body.error as ApiError;
+  console.log('Received error log:', error.fullErrMsg);
 
   const logs = readFileSync(localErrorLogFilePath, 'utf-8');
   const logsArray = JSON.parse(logs);

@@ -20,6 +20,8 @@ const deleteComicFunc =
   process.env.LOCAL_DEV === 'true' ? deleteComicLocally : deleteComicFromR2;
 
 export async function handleUpload(req: Request, res: Response) {
+  console.log('Handling upload');
+
   if (!req.files) {
     return res.status(400).send('No files were uploaded.');
   }
@@ -33,20 +35,28 @@ export async function handleUpload(req: Request, res: Response) {
   const comicName = req.body.comicName as string;
   const pageFiles = req.files['pages'] as Express.Multer.File[];
   const thumbnailFiles = req.files['thumbnail'] as Express.Multer.File[];
+  console.log(
+    `Comic name: ${comicName}. Num pages: ${pageFiles.length}. Num thumbnails: ${thumbnailFiles.length}.`
+  );
 
   const thumbnailObjects = await processThumbnailFile(thumbnailFiles[0]);
+  console.log('Processed thumbnail.');
   const thumbnailSuccess = await saveThumbnailFilesFunc(comicName, thumbnailObjects);
   if (!thumbnailSuccess) {
     await deleteComicFunc(comicName);
     return res.status(500).send('Failed to upload thumbnail files to R2.');
   }
+  console.log('Uploaded thumbnail.');
 
   const pageObjects = await processPageFiles(pageFiles);
+  console.log('Processed pages.');
   const pageSuccess = await savePageFilesFunc(comicName, pageObjects);
   if (!pageSuccess) {
     await deleteComicFunc(comicName);
     return res.status(500).send('Failed to upload page files to R2.');
   }
+  console.log('Uploaded pages.');
+  console.log('Upload successful!');
 
   return res.status(200).send('Upload successful');
 }
