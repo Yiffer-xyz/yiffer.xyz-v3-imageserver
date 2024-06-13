@@ -7,6 +7,7 @@ import { handleUpload } from './comic-upload/comic-upload';
 import multer from 'multer';
 import cors from 'cors';
 import { serveFile } from './local-file-serve/serve-file';
+import { handleErrorLog, serveErrorLogs } from './temp-logging/temp-logging-handlers';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -28,6 +29,10 @@ app.post(
 );
 
 app.get('/:comicName/:fileName', serveFile);
+
+// Just for now, error logging for dev
+app.post('/error-log', handleErrorLog);
+app.get('/error-log', serveErrorLogs);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

@@ -10,13 +10,15 @@ Why? Because it's simply easier than to figure out how to do it efficiently in C
 
 ### How to local dev
 
-First, create and set up `.env`. Find the contents on Discord. Run `yarn`.
+First, create and set up `.env`. Find the contents on Discord. Run `yarn`. If running doesn't work,try `yarn add sharp --ignore-engines`.
 
 Then simply `yarn dev` and you're golden. The process will run on port `8770`. In the main repo, set the `PAGES_PATH` variable in `.dev.vars` to `http://localhost:8770`.
 
 ### How to prod
 
-Since this one is so simple, we can keep the running very simple too. Get onto the vm this should run on and `yarn build`, and then `yarn start`, which will run it via `pm2`.
+Set up nginx first, see `nginx-config-file.conf` (to be named after the domain).
+
+Since this one is so simple, we can keep the running very simple too. Get onto the vm this should run on and `yarn build`, and then `yarn start`, which will run it via `pm2`. If building doesn't work, try `yarn add sharp --ignore-engines`.
 
 Make sure to set up persistence across restarts:
 
