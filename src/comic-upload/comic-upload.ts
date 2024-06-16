@@ -6,11 +6,19 @@ import {
   MULTIPLIERS_TO_MAKE_THUMBNAILS,
   MAX_PAGE_WIDTH,
 } from '../constants';
-import { sendThumbnailFilesToR2, sendPageFilesToR2 } from './cloudflare-page-saver';
+import {
+  sendThumbnailFilesToR2,
+  sendPageFilesToR2,
+} from '../file-handling/cloudflare-page-saver';
 import { PageForUpload, ThumbnailForUpload } from '../types';
-import { deleteComicFromR2 } from '../comic-delete/cloudflare-comic-delete';
-import { savePageFilesLocally, saveThumbnailFilesLocally } from './local-page-saver';
-import { deleteComicLocally } from '../comic-delete/local-comic-delete';
+import { deleteComicFromR2 } from '../file-handling/cloudflare-comic-delete';
+import {
+  savePageFilesLocally,
+  saveThumbnailFilesLocally,
+} from '../file-handling/local-page-saver';
+import { deleteComicLocally } from '../file-handling/local-comic-delete';
+import { padPageNumber } from '../utils';
+import { addPagesToComic } from '../pages-upload.ts/pages-upload';
 
 const savePageFilesFunc =
   process.env.LOCAL_DEV === 'true' ? savePageFilesLocally : sendPageFilesToR2;
@@ -23,12 +31,15 @@ export async function handleUpload(req: Request, res: Response) {
   console.log('Handling upload');
 
   if (!req.files) {
+    console.log('⛔ No files were uploaded.');
     return res.status(400).send('No files were uploaded.');
   }
   if (Array.isArray(req.files)) {
+    console.log('⛔ Invalid request body structure.');
     return res.status(400).send('Invalid request body structure.');
   }
   if (!req.body.comicName || !req.body.uploadId) {
+    console.log('⛔ Comic name and uploadId is required.');
     return res.status(400).send('Comic name and uploadId is required.');
   }
 
@@ -44,18 +55,17 @@ export async function handleUpload(req: Request, res: Response) {
   const thumbnailSuccess = await saveThumbnailFilesFunc(comicName, thumbnailObjects);
   if (!thumbnailSuccess) {
     await deleteComicFunc(comicName);
+    console.log('⛔ Failed to upload thumbnail files to R2.');
     return res.status(500).send('Failed to upload thumbnail files to R2.');
   }
   console.log('Uploaded thumbnail.');
 
-  const pageObjects = await processPageFiles(pageFiles);
-  console.log('Processed pages.');
-  const pageSuccess = await savePageFilesFunc(comicName, pageObjects);
+  const pageSuccess = await addPagesToComic(comicName, pageFiles);
   if (!pageSuccess) {
     await deleteComicFunc(comicName);
+    console.log('⛔ Failed to upload page files to R2.');
     return res.status(500).send('Failed to upload page files to R2.');
   }
-  console.log('Uploaded pages.');
   console.log('Upload successful!');
 
   return res.status(200).send('Upload successful');
@@ -100,35 +110,43 @@ async function processThumbnailFile(
   return convertedFiles;
 }
 
-async function processPageFiles(files: Express.Multer.File[]): Promise<PageForUpload[]> {
-  const returnFiles: PageForUpload[] = [];
+async function processPageFile(
+  file: Express.Multer.File,
+  pageNumber: number
+): Promise<PageForUpload[]> {
+  const sharpFile = sharp(file.buffer);
+  const metadata = await sharpFile.metadata();
+  const width = metadata.width;
+  if (!width) return [];
 
-  for (const file of files) {
-    const sharpFile = sharp(file.buffer);
-    const metadata = await sharpFile.metadata();
-    const width = metadata.width;
-    if (!width) continue;
-    const isOverMaxWidth = width > MAX_PAGE_WIDTH;
-    const resizedSharp = isOverMaxWidth ? sharpFile.resize(MAX_PAGE_WIDTH) : sharpFile;
+  const isOverMaxWidth = width > MAX_PAGE_WIDTH;
+  const resizedSharp = isOverMaxWidth ? sharpFile.resize(MAX_PAGE_WIDTH) : sharpFile;
 
-    const webpFile = await resizedSharp.webp({ quality: 80 }).toBuffer();
-    const jpegFile = await resizedSharp.jpeg({ quality: 80 }).toBuffer();
+  const webpFile = await resizedSharp.webp({ quality: 80 }).toBuffer();
+  const jpegFile = await resizedSharp.jpeg({ quality: 80 }).toBuffer();
 
-    returnFiles.push({
+  return [
+    {
       buffer: webpFile,
       fileType: 'webp',
-      newFileName: makePageFilename(file.originalname, 'webp'),
-    });
-    returnFiles.push({
+      newFileName: makePageFilename(pageNumber, 'webp'),
+    },
+    {
       buffer: jpegFile,
       fileType: 'jpg',
-      newFileName: makePageFilename(file.originalname, 'jpg'),
-    });
-  }
-
-  return returnFiles;
+      newFileName: makePageFilename(pageNumber, 'jpg'),
+    },
+  ];
 }
 
-function makePageFilename(originalFilename: string, newFileType: string) {
-  return originalFilename.replace(/\..+$/, `.${newFileType}`);
+function getPageNumberFromFilename(filename: string) {
+  const match = filename.match(/(\d+)\./);
+  if (!match) {
+    throw new Error(`Failed to extract page number from filename: ${filename}`);
+  }
+  return parseInt(match[1]);
+}
+
+function makePageFilename(pageNumber: number, fileType: string) {
+  return `${padPageNumber(pageNumber)}.${fileType}`;
 }

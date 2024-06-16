@@ -18,3 +18,13 @@ export async function deleteComicFromR2(comicName: string) {
   });
   await s3Client.send(deleteCommand);
 }
+
+export async function deletePageFromR2(comicName: string, pageName: string) {
+  const deleteCommand = new DeleteObjectsCommand({
+    Bucket: process.env.COMICS_BUCKET_NAME,
+    Delete: {
+      Objects: [{ Key: `${comicName}/${pageName}` }],
+    },
+  });
+  await s3Client.send(deleteCommand);
+}

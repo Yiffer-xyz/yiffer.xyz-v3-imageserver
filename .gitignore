@@ -7,3 +7,4 @@ coverage
 build
 data
 error-logs
+.DS_Store
