@@ -10,6 +10,7 @@ import { serveFile } from './local-file-serve/serve-file';
 import { handleErrorLog, serveErrorLogs } from './temp-logging/temp-logging-handlers';
 import { handleRearrange } from './comic-rearrange/comic-rearrange';
 import { handlePageAdditions } from './pages-upload.ts/handle-page-additions';
+import handleAdSubmission from './ad-submission/handle-ad-submission';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -35,6 +36,8 @@ app.post(
 app.post('/add-pages', upload.fields([{ name: 'pages' }]), handlePageAdditions);
 
 app.post('/rearrange-comic', upload.any(), handleRearrange);
+
+app.post('/submit-ad', upload.single('adFile'), handleAdSubmission);
 
 app.get('/:comicName/:fileName', serveFile);
 

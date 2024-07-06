@@ -10,3 +10,9 @@ export type PageForUpload = {
   fileType: string;
   newFileName: string;
 };
+
+export type AdFileForUpload = {
+  buffer: Buffer;
+  fileType: string;
+  multiplier: number;
+};

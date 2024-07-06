@@ -28,3 +28,22 @@ export async function deletePageFromR2(comicName: string, pageName: string) {
   });
   await s3Client.send(deleteCommand);
 }
+
+export async function deleteAdsFromR2(adId: string) {
+  const listCommand = new ListObjectsV2Command({
+    Bucket: process.env.ADS_BUCKET_NAME,
+    Prefix: `${adId}.`,
+  });
+  const listResponse = await s3Client.send(listCommand);
+  if (!listResponse.Contents) return;
+
+  const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
+  const deleteCommand = new DeleteObjectsCommand({
+    Bucket: process.env.ADS_BUCKET_NAME,
+    Delete: {
+      Objects: objects,
+    },
+  });
+
+  await s3Client.send(deleteCommand);
+}

@@ -6,22 +6,14 @@ import {
   MULTIPLIERS_TO_MAKE_THUMBNAILS,
   MAX_PAGE_WIDTH,
 } from '../constants';
-import {
-  sendThumbnailFilesToR2,
-  sendPageFilesToR2,
-} from '../file-handling/cloudflare-page-saver';
+import { sendThumbnailFilesToR2 } from '../file-handling/cloudflare-page-saver';
 import { PageForUpload, ThumbnailForUpload } from '../types';
 import { deleteComicFromR2 } from '../file-handling/cloudflare-comic-delete';
-import {
-  savePageFilesLocally,
-  saveThumbnailFilesLocally,
-} from '../file-handling/local-page-saver';
+import { saveThumbnailFilesLocally } from '../file-handling/local-page-saver';
 import { deleteComicLocally } from '../file-handling/local-comic-delete';
 import { padPageNumber } from '../utils';
 import { addPagesToComic } from '../pages-upload.ts/pages-upload';
 
-const savePageFilesFunc =
-  process.env.LOCAL_DEV === 'true' ? savePageFilesLocally : sendPageFilesToR2;
 const saveThumbnailFilesFunc =
   process.env.LOCAL_DEV === 'true' ? saveThumbnailFilesLocally : sendThumbnailFilesToR2;
 const deleteComicFunc =

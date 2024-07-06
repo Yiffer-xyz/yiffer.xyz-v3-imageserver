@@ -6,10 +6,20 @@ export function padPageNumber(pageNumber: number) {
 }
 
 export function fileTypeToMime(fileType: string): string {
-  if (fileType === 'webp') {
-    return 'image/webp';
+  switch (fileType) {
+    case 'webp':
+      return 'image/webp';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'mp4':
+      return 'video/mp4';
+    case 'webm':
+      return 'video/webm';
+    default:
+      return 'image/jpeg';
   }
-  return 'image/jpeg';
 }
 
 const currentdir = process.cwd();
@@ -27,6 +37,11 @@ if (process.env.LOCAL_DEV === 'true') {
 if (!existsSync(localDataPath)) {
   mkdirSync(localDataPath);
   console.log('Created data directory for local dev.');
+}
+
+if (!existsSync(`${localDataPath}/pi`)) {
+  mkdirSync(`${localDataPath}/pi`);
+  console.log('Created pi directory for local dev.');
 }
 
 if (!existsSync(localErrorLogPath)) {

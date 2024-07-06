@@ -1,13 +1,5 @@
 import { Request, Response } from 'express';
-import sharp from 'sharp';
-import {
-  BASE_THUMB_WIDTH,
-  BASE_THUMB_HEIGHT,
-  MULTIPLIERS_TO_MAKE_THUMBNAILS,
-  MAX_PAGE_WIDTH,
-} from '../constants';
 import { sendPageFilesToR2 } from '../file-handling/cloudflare-page-saver';
-import { PageForUpload, ThumbnailForUpload } from '../types';
 import {
   deleteComicFromR2,
   deletePageFromR2,
@@ -18,17 +10,12 @@ import { padPageNumber } from '../utils';
 import { renamePageFileInR2 } from '../file-handling/cloudflare-pagerenamer';
 import { renamePageFileLocally } from '../file-handling/local-pagerenamer';
 
-const savePageFilesFunc =
-  process.env.LOCAL_DEV === 'true' ? savePageFilesLocally : sendPageFilesToR2;
-const deleteComicFunc =
-  process.env.LOCAL_DEV === 'true' ? deleteComicLocally : deleteComicFromR2;
 const renamePageFileFunc =
   process.env.LOCAL_DEV === 'true' ? renamePageFileLocally : renamePageFileInR2;
 
 type UpdatedComicPage = {
   previousPos?: number;
   newPos?: number;
-  isNewPage: boolean;
   isDeleted: boolean;
   hasBeenTempRenamed?: boolean;
 };
@@ -52,7 +39,7 @@ export async function handleRearrange(req: Request, res: Response) {
 
     // Loop 1
     for (const updatedPage of updatedPages) {
-      if (updatedPage.isNewPage || updatedPage.newPos === updatedPage.previousPos) {
+      if (updatedPage.newPos === updatedPage.previousPos) {
         continue;
       }
       if (updatedPage.isDeleted && updatedPage.previousPos) {
