@@ -8,6 +8,13 @@ A server to:
 
 Why? Because it's simply easier than to figure out how to do it efficiently in CF Workers - especially resizing and so on.
 
+### Installing Sharp
+
+Sharp can be troublesone to install.
+
+- On mac: `SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm_config_arch=arm64 npm_config_platform=darwin yarn add sharp`
+- On linux: `yarn add sharp --ignore-engines`
+
 ### How to local dev
 
 First, create and set up `.env`. Find the contents on Discord. Run `yarn`. If running doesn't work,try `yarn add sharp --ignore-engines`.

@@ -5,9 +5,12 @@ import { saveAdFilesLocally } from '../file-handling/local-ad-saver';
 import { sendAdFilesToR2 } from '../file-handling/cloudflare-ad-saver';
 import { deleteAdsFromR2 } from '../file-handling/cloudflare-comic-delete';
 import {
+  ADVERTISEMENTS,
+  AdType,
   BASE_THUMB_HEIGHT,
   BASE_THUMB_WIDTH,
   MULTIPLIERS_TO_MAKE_THUMBNAILS,
+  isAdType,
 } from '../constants';
 
 const legalFileMimeTypes = [
@@ -27,11 +30,12 @@ export default async function handleAdSubmission(req: Request, res: Response) {
   console.log('Handling ad submission');
 
   const adId = req.body.adId;
+  const adType = req.body.adType;
   const file = req.file;
 
-  if (!adId || !file) {
-    console.log('⛔ Ad ID and file are required, but are:', adId, file);
-    return res.status(400).send('Ad ID and file are required');
+  if (!adId || !file || !adType || !isAdType(adType)) {
+    console.log('⛔ Ad ID, file, and adType are required, but are:', adId, file, adType);
+    return res.status(400).send('Ad ID, file, and adType are required');
   }
 
   if (!legalFileMimeTypes.includes(file.mimetype)) {
@@ -42,10 +46,10 @@ export default async function handleAdSubmission(req: Request, res: Response) {
   let pagesForUpload: AdFileForUpload[] = [];
 
   if (isAnimated(file)) {
-    console.log('⛔ Animated ads are not allowed');
+    console.log('⛔ Animated ads are not supported yet');
     return res.status(400).send('Not implemented yet');
   } else {
-    pagesForUpload = await processImageFile(file);
+    pagesForUpload = await processImageFile(file, adType);
   }
 
   const adSuccess = await saveAdFunc(adId, pagesForUpload);
@@ -59,37 +63,31 @@ export default async function handleAdSubmission(req: Request, res: Response) {
   res.status(200).send('Ad handled');
 }
 
-async function processImageFile(file: Express.Multer.File): Promise<AdFileForUpload[]> {
+async function processImageFile(
+  file: Express.Multer.File,
+  adType: AdType
+): Promise<AdFileForUpload[]> {
   const filesForUpload: AdFileForUpload[] = [];
-  const [w, h] = [BASE_THUMB_WIDTH, BASE_THUMB_HEIGHT];
+  const sizes = getWidthHeightsForAdType(adType);
 
   const sharpFile = sharp(file.buffer);
   const fileWidth = (await sharpFile.metadata()).width;
 
-  // Make webp
-  for (const multiplier of MULTIPLIERS_TO_MAKE_THUMBNAILS) {
-    // no need to resize and reduce quality if uploaded file is correct size and webp
-    if (file.mimetype === 'image/webp' && fileWidth === w * multiplier) {
-      filesForUpload.push({ buffer: file.buffer, multiplier, fileType: 'webp' });
-    }
-    const buffer = await sharpFile
-      .resize(w * multiplier, h * multiplier)
+  for (const { width, height, multiplier } of sizes) {
+    const bufferWebp = await sharpFile
+      .resize(width, height)
       .webp({ quality: 80 })
       .toBuffer();
-    filesForUpload.push({ buffer, multiplier, fileType: 'webp' });
-  }
+    filesForUpload.push({ buffer: bufferWebp, multiplier, fileType: 'webp' });
 
-  // Make jpeg
-  for (const multiplier of MULTIPLIERS_TO_MAKE_THUMBNAILS) {
-    // no need to resize and reduce quality if uploaded file is correct size and jpeg
-    if (file.mimetype === 'image/jpeg' && fileWidth === w * multiplier) {
+    if (file.mimetype === 'image/jpeg' && fileWidth === width) {
       filesForUpload.push({ buffer: file.buffer, multiplier, fileType: 'jpg' });
     } else {
-      const buffer = await sharpFile
-        .resize(w * multiplier, h * multiplier)
+      const bufferJpeg = await sharpFile
+        .resize(width, height)
         .jpeg({ quality: 80 })
         .toBuffer();
-      filesForUpload.push({ buffer, multiplier, fileType: 'jpg' });
+      filesForUpload.push({ buffer: bufferJpeg, multiplier, fileType: 'jpg' });
     }
   }
 
@@ -102,4 +100,46 @@ function isAnimated(file: Express.Multer.File) {
     file.mimetype === 'video/mp4' ||
     file.mimetype === 'video/webm'
   );
+}
+
+function getWidthHeightsForAdType(
+  adType: AdType
+): { width: number; height: number; multiplier: number }[] {
+  switch (adType) {
+    case 'card':
+      return [
+        { width: BASE_THUMB_WIDTH * 2, height: BASE_THUMB_HEIGHT * 2, multiplier: 2 },
+        { width: BASE_THUMB_WIDTH * 3, height: BASE_THUMB_HEIGHT * 3, multiplier: 3 },
+      ];
+    case 'banner':
+      const bannerAd = ADVERTISEMENTS.find(ad => ad.name === 'banner');
+      return [
+        {
+          width: bannerAd!.minDimensions.width,
+          height: bannerAd!.minDimensions.height,
+          multiplier: 1,
+        },
+        {
+          width: bannerAd!.idealDimensions!.width,
+          height: bannerAd!.idealDimensions!.height,
+          multiplier: 2,
+        },
+      ];
+    case 'topSmall':
+      const topSmallAd = ADVERTISEMENTS.find(ad => ad.name === 'topSmall');
+      return [
+        {
+          width: topSmallAd!.minDimensions.width,
+          height: topSmallAd!.minDimensions.height,
+          multiplier: 1,
+        },
+        {
+          width: topSmallAd!.idealDimensions!.width,
+          height: topSmallAd!.idealDimensions!.height,
+          multiplier: 2,
+        },
+      ];
+    default:
+      return [];
+  }
 }
