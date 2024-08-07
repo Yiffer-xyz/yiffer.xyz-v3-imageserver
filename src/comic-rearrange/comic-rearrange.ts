@@ -1,11 +1,5 @@
 import { Request, Response } from 'express';
-import { sendPageFilesToR2 } from '../file-handling/cloudflare-page-saver';
-import {
-  deleteComicFromR2,
-  deletePageFromR2,
-} from '../file-handling/cloudflare-comic-delete';
-import { savePageFilesLocally } from '../file-handling/local-page-saver';
-import { deleteComicLocally } from '../file-handling/local-comic-delete';
+import { deletePageFromR2 } from '../file-handling/cloudflare-comic-delete';
 import { padPageNumber } from '../utils';
 import { renamePageFileInR2 } from '../file-handling/cloudflare-pagerenamer';
 import { renamePageFileLocally } from '../file-handling/local-pagerenamer';
@@ -57,11 +51,13 @@ export async function handleRearrange(req: Request, res: Response) {
           renamePageFileFunc(
             comicName,
             `${oldPageNumStr}.jpg`,
+            comicName,
             `${oldPageNumStr}.jpg-temp`
           ),
           renamePageFileFunc(
             comicName,
             `${oldPageNumStr}.webp`,
+            comicName,
             `${oldPageNumStr}.webp-temp`
           ),
         ]);
@@ -83,11 +79,13 @@ export async function handleRearrange(req: Request, res: Response) {
         renamePageFileFunc(
           comicName,
           `${oldPageNumStr}.jpg-temp`,
+          comicName,
           `${newPageNumStr}.jpg`
         ),
         renamePageFileFunc(
           comicName,
           `${oldPageNumStr}.webp-temp`,
+          comicName,
           `${newPageNumStr}.webp`
         ),
       ]);

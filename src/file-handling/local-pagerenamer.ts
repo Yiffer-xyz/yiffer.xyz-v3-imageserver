@@ -1,12 +1,14 @@
 import { renameSync } from 'fs';
-import { localDataPath } from '../utils';
+import { createLocalComicFolderIfNotExists, localDataPath } from '../utils';
 
 export async function renamePageFileLocally(
-  comicName: string,
+  oldComicName: string,
   oldFileName: string,
+  newComicName: string,
   newFileName: string
 ): Promise<void> {
-  const oldFilePath = `${localDataPath}/${comicName}/${oldFileName}`;
-  const newFilePath = `${localDataPath}/${comicName}/${newFileName}`;
+  createLocalComicFolderIfNotExists(newComicName);
+  const oldFilePath = `${localDataPath}/${oldComicName}/${oldFileName}`;
+  const newFilePath = `${localDataPath}/${newComicName}/${newFileName}`;
   renameSync(oldFilePath, newFilePath);
 }

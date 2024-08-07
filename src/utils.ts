@@ -49,3 +49,9 @@ if (!existsSync(localErrorLogPath)) {
   appendFileSync(`${localErrorLogPath}/error-logs.json`, '[]');
   console.log(`Created error log file at ${localErrorLogPath}/error-logs.json`);
 }
+
+export function createLocalComicFolderIfNotExists(comicName: string) {
+  if (!existsSync(`${localDataPath}/${comicName}`)) {
+    mkdirSync(`${localDataPath}/${comicName}`);
+  }
+}

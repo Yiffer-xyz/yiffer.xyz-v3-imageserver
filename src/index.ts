@@ -11,6 +11,7 @@ import { handleErrorLog, serveErrorLogs } from './temp-logging/temp-logging-hand
 import { handleRearrange } from './comic-rearrange/comic-rearrange';
 import { handlePageAdditions } from './pages-upload.ts/handle-page-additions';
 import handleAdSubmission from './ad-submission/handle-ad-submission';
+import handleRename from './comic-rename/comic-rename';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -37,7 +38,13 @@ app.post('/add-pages', upload.fields([{ name: 'pages' }]), handlePageAdditions);
 
 app.post('/rearrange-comic', upload.any(), handleRearrange);
 
+app.post('/rename-comic', handleRename);
+
 app.post('/submit-ad', upload.single('adFile'), handleAdSubmission);
+
+app.post('/update-ad', upload.single('adFile'), (req, res) =>
+  handleAdSubmission(req, res)
+);
 
 app.get('/:comicName/:fileName', serveFile);
 

@@ -1,18 +1,12 @@
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { PageForUpload, ThumbnailForUpload } from '../types';
-import { localDataPath } from '../utils';
-
-function createFolderIfNotExists(folderName: string) {
-  if (!existsSync(`${localDataPath}/${folderName}`)) {
-    mkdirSync(`${localDataPath}/${folderName}`);
-  }
-}
+import { createLocalComicFolderIfNotExists, localDataPath } from '../utils';
 
 export async function saveThumbnailFilesLocally(
   comicName: string,
   pagesObjects: ThumbnailForUpload[]
 ): Promise<boolean> {
-  createFolderIfNotExists(comicName);
+  createLocalComicFolderIfNotExists(comicName);
   const uploadPromises = pagesObjects.map(
     ({ buffer, multiplier, fileType, filenameBase }) => {
       const path = `${localDataPath}/${comicName}/${filenameBase}-${multiplier}x.${fileType}`;
@@ -38,7 +32,7 @@ export async function savePageFilesLocally(
   comicName: string,
   pagesObjects: PageForUpload[]
 ): Promise<boolean> {
-  createFolderIfNotExists(comicName);
+  createLocalComicFolderIfNotExists(comicName);
   const uploadPromises = pagesObjects.map(({ buffer, fileType, newFileName }) => {
     const path = `${localDataPath}/${comicName}/${newFileName}`;
     return new Promise((resolve, reject) => {
