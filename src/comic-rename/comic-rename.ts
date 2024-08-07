@@ -26,15 +26,17 @@ export default async function handleRename(req: Request, res: Response) {
       );
     }
 
-    MULTIPLIERS_TO_MAKE_THUMBNAILS.forEach(async multiplier => {
-      renamePromises.push(
-        renamePageFileFunc(
-          prevName,
-          `thumbnail-${multiplier}x.jpg`,
-          newName,
-          `thumbnail-${multiplier}x.jpg`
-        )
-      );
+    ['jpg', 'webp'].forEach(async fileType => {
+      MULTIPLIERS_TO_MAKE_THUMBNAILS.forEach(async multiplier => {
+        renamePromises.push(
+          renamePageFileFunc(
+            prevName,
+            `thumbnail-${multiplier}x.${fileType}`,
+            newName,
+            `thumbnail-${multiplier}x.${fileType}`
+          )
+        );
+      });
     });
 
     console.log(' Renaming files...');
