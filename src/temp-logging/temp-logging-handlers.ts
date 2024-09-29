@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { localErrorLogFilePath } from '../utils';
 import { readFileSync, writeFileSync } from 'fs';
 
-type ApiError = {
-  fullErrMsg: string;
+type ApiLogError = {
+  logMessage: string;
   context?: any;
-  dbQueriesWithParams?: any;
+  dbQueries?: any;
   timestamp?: string;
-  end?: string;
+  errorJSONStr?: string;
 };
 
 export async function handleErrorLog(req: Request, res: Response) {
@@ -15,8 +15,8 @@ export async function handleErrorLog(req: Request, res: Response) {
     return res.status(400).send('No logs were sent.');
   }
 
-  const error = req.body.error as ApiError;
-  console.log('Received error log:', error.fullErrMsg);
+  const error = req.body.error as ApiLogError;
+  console.log('Received error log:', error);
 
   const logs = readFileSync(localErrorLogFilePath, 'utf-8');
   const logsArray = JSON.parse(logs);
@@ -27,6 +27,7 @@ export async function handleErrorLog(req: Request, res: Response) {
 
   writeFileSync(localErrorLogFilePath, JSON.stringify(logsArray, null, 2));
 
+  console.log('Logs received');
   return res.status(200).send('Logs received');
 }
 
