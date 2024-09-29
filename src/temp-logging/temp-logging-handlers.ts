@@ -6,7 +6,7 @@ type ApiLogError = {
   logMessage: string;
   context?: any;
   dbQueries?: any;
-  timestamp?: string;
+  timestamp: string;
   errorJSONStr?: string;
 };
 
@@ -31,12 +31,120 @@ export async function handleErrorLog(req: Request, res: Response) {
   return res.status(200).send('Logs received');
 }
 
+// 🖐️ THIS IS AI GENERATED CODE, DO NOT JUDGE IT BY ITS QUALITY 🖐️
+// It's just something ultra quick to see logs.
 export async function serveErrorLogs(req: Request, res: Response) {
   const logs = readFileSync(localErrorLogFilePath, 'utf-8');
-
   const parsed = JSON.parse(logs);
-
   const sliced = parsed.slice(-50);
 
-  return res.status(200).send(sliced);
+  const getTimeAgo = (timestamp: string) => {
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hours ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} days ago`;
+  };
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Error Logs</title>
+      <style>
+        /* CSS Reset */
+        *, *::before, *::after {
+          box-sizing: border-box;
+        }
+        body, h1, h2, h3, h4, p, figure, blockquote, dl, dd, div, span, pre {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.5;
+          min-height: 100vh;
+          padding: 20px;
+        }
+        /* Custom styles */
+        h1 {
+          margin-bottom: 20px;
+        }
+        .log-entry {
+          font-family: Consolas, monospace;
+          margin-bottom: 20px;
+          border: 1px solid #49ded7;
+          padding: 10px;
+          word-wrap: break-word;
+        }
+        .log-summary {
+          display: flex;
+          flex-direction: column;
+          cursor: pointer;
+        }
+        .log-details {
+          display: none;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .log-details-item {
+          font-size: 0.8em;
+          white-space: pre-wrap;
+          margin-top: 10px;
+        }
+        .expand-icon {
+          font-size: 1.2em;
+        }
+        .bold {
+          font-weight: bold;
+        }
+        .message-block {
+          margin-bottom: 16px;
+        }
+        .time-ago {
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Error Logs</h1>
+      ${sliced
+        .map(
+          (log: ApiLogError) => `
+        <div class="log-entry">
+          <div class="log-summary" onclick="toggleDetails(this.parentElement)">
+            <div>
+              <span class="time-ago">${getTimeAgo(log.timestamp)}</span> (${new Date(log.timestamp).toLocaleString('nb-NO')})
+            </div>
+              <span class="bold">${log.logMessage}</span>
+          </div>
+          <div class="log-details">
+            <p class="log-details-item">${log.context ? `Context: ${JSON.stringify(log.context, null, 2)}` : ''}</p>
+            <p class="log-details-item">${log.dbQueries ? `DB Queries: ${JSON.stringify(log.dbQueries, null, 2)}` : ''}</p>
+            <p class="log-details-item">${log.errorJSONStr ? `Error JSON: ${log.errorJSONStr}` : ''}</p>
+          </div>
+        </div>
+      `
+        )
+        .join('')}
+      <script>
+        function toggleDetails(element) {
+          const details = element.querySelector('.log-details');
+          if (details.style.display === 'none' || details.style.display === '') {
+            details.style.display = 'flex';
+          } else {
+            details.style.display = 'none';
+          }
+        }
+      </script>
+    </body>
+    </html>
+  `;
+
+  res.setHeader('Content-Type', 'text/html');
+  return res.status(200).send(htmlContent);
 }

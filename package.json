@@ -2,7 +2,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "rimraf build && tsc -p tsconfig.json",
-    "start": "NODE_ENV=production pm2 start build/index.js --watch -i max"
+    "start": "NODE_ENV=production pm2 start build/index.js --watch -i max --ignore-watch=\"error-logs/error-logs.json\""
   },
   "devDependencies": {
     "@types/cors": "^2",
