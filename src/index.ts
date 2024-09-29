@@ -7,7 +7,11 @@ import { handleUpload } from './comic-upload/comic-upload';
 import multer from 'multer';
 import cors from 'cors';
 import { serveFile } from './local-file-serve/serve-file';
-import { handleErrorLog, serveErrorLogs } from './temp-logging/temp-logging-handlers';
+import {
+  clearLogs,
+  handleErrorLog,
+  serveErrorLogs,
+} from './temp-logging/temp-logging-handlers';
 import { handleRearrange } from './comic-rearrange/comic-rearrange';
 import { handlePageAdditions } from './pages-upload.ts/handle-page-additions';
 import handleAdSubmission from './ad-submission/handle-ad-submission';
@@ -54,6 +58,7 @@ app.get('/:comicName/:fileName', serveFile);
 // Just for now, error logging for dev
 app.post('/error-log', handleErrorLog);
 app.get('/error-log', serveErrorLogs);
+app.get('/clear-error-logs', clearLogs);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

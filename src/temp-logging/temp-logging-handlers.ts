@@ -32,6 +32,11 @@ export async function handleErrorLog(req: Request, res: Response) {
   return res.status(200).send('Logs received');
 }
 
+export async function clearLogs(req: Request, res: Response) {
+  writeFileSync(localErrorLogFilePath, JSON.stringify([], null, 2));
+  return res.status(200).send('Logs cleared');
+}
+
 // 🖐️ THIS IS AI GENERATED CODE, DO NOT JUDGE IT BY ITS QUALITY 🖐️
 // It's just something ultra quick to see logs.
 export async function serveErrorLogs(req: Request, res: Response) {
@@ -74,7 +79,7 @@ export async function serveErrorLogs(req: Request, res: Response) {
         }
         /* Custom styles */
         h1 {
-          margin-bottom: 20px;
+          margin-bottom: 0;
         }
         .log-entry {
           font-family: Consolas, monospace;
@@ -109,10 +114,31 @@ export async function serveErrorLogs(req: Request, res: Response) {
         .time-ago {
           font-weight: bold;
         }
+        .clear-logs-btn {
+          background-color: #08ccc2;
+          color: white;
+          padding: 10px 15px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        .clear-logs-btn:hover {
+          background-color: #00b8ad;
+        }
+        .header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
       </style>
     </head>
     <body>
-      <h1>Error Logs</h1>
+      <div class="header-container">
+        <h1>Error Logs</h1>
+        <button class="clear-logs-btn" onclick="clearLogs()">Clear Logs</button>
+      </div>
       ${sliced
         .map(
           (log: ApiLogError) => `
@@ -140,6 +166,24 @@ export async function serveErrorLogs(req: Request, res: Response) {
             details.style.display = 'flex';
           } else {
             details.style.display = 'none';
+          }
+        }
+
+        function clearLogs() {
+          if (confirm('Are you sure you want to clear all logs?')) {
+            fetch('/clear-error-logs', { method: 'GET' })
+              .then(response => {
+                if (response.ok) {
+                  alert('Logs cleared successfully');
+                  location.reload();
+                } else {
+                  alert('Failed to clear logs');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while clearing logs');
+              });
           }
         }
       </script>
