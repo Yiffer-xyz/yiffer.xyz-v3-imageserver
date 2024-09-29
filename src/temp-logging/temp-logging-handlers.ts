@@ -8,6 +8,7 @@ type ApiLogError = {
   dbQueries?: any;
   timestamp: string;
   errorJSONStr?: string;
+  sqlErrorShort?: string;
 };
 
 export async function handleErrorLog(req: Request, res: Response) {
@@ -35,8 +36,9 @@ export async function handleErrorLog(req: Request, res: Response) {
 // It's just something ultra quick to see logs.
 export async function serveErrorLogs(req: Request, res: Response) {
   const logs = readFileSync(localErrorLogFilePath, 'utf-8');
+  console.log('🃏read');
   const parsed = JSON.parse(logs);
-  const sliced = parsed.slice(-50);
+  const sliced = parsed.slice(0, 100);
 
   const getTimeAgo = (timestamp: string) => {
     const diff = Date.now() - new Date(timestamp).getTime();
@@ -100,7 +102,6 @@ export async function serveErrorLogs(req: Request, res: Response) {
           font-size: 1.2em;
         }
         .bold {
-          font-weight: bold;
         }
         .message-block {
           margin-bottom: 16px;
@@ -123,9 +124,10 @@ export async function serveErrorLogs(req: Request, res: Response) {
               <span class="bold">${log.logMessage}</span>
           </div>
           <div class="log-details">
-            <p class="log-details-item">${log.context ? `Context: ${JSON.stringify(log.context, null, 2)}` : ''}</p>
-            <p class="log-details-item">${log.dbQueries ? `DB Queries: ${JSON.stringify(log.dbQueries, null, 2)}` : ''}</p>
-            <p class="log-details-item">${log.errorJSONStr ? `Error JSON: ${log.errorJSONStr}` : ''}</p>
+            ${log.sqlErrorShort ? `<p class="log-details-item">SQL short: ${log.sqlErrorShort}</p>` : ''}
+            ${log.context && Object.keys(log.context).length > 0 ? `<p class="log-details-item">Context: ${JSON.stringify(log.context, null, 2)}</p>` : ''}
+            ${log.dbQueries ? `<p class="log-details-item">DB Queries: ${JSON.stringify(log.dbQueries, null, 2)}</p>` : ''}
+            ${log.errorJSONStr ? `<p class="log-details-item">Error JSON: ${log.errorJSONStr.replace(/\\n/g, ' ')}</p>` : ''}
           </div>
         </div>
       `
