@@ -9,6 +9,8 @@ type ApiLogError = {
   timestamp: string;
   errorJSONStr?: string;
   sqlErrorShort?: string;
+  isServerError?: boolean;
+  isClientError?: boolean;
 };
 
 export async function handleErrorLog(req: Request, res: Response) {
@@ -41,7 +43,6 @@ export async function clearLogs(req: Request, res: Response) {
 // It's just something ultra quick to see logs.
 export async function serveErrorLogs(req: Request, res: Response) {
   const logs = readFileSync(localErrorLogFilePath, 'utf-8');
-  console.log('🃏read');
   const parsed = JSON.parse(logs);
   const sliced = parsed.slice(0, 100);
 
@@ -147,7 +148,9 @@ export async function serveErrorLogs(req: Request, res: Response) {
             <div>
               <span class="time-ago">${getTimeAgo(log.timestamp)}</span> (${new Date(log.timestamp).toLocaleString('nb-NO')})
             </div>
-              <span class="bold">${log.logMessage}</span>
+            ${log.isServerError ? '<span class="bold">Server error</span>' : ''}
+            ${log.isClientError ? '<span class="bold">Client error</span>' : ''}
+            <span class="bold">${log.logMessage}</span>
           </div>
           <div class="log-details">
             ${log.sqlErrorShort ? `<p class="log-details-item">SQL short: ${log.sqlErrorShort}</p>` : ''}
