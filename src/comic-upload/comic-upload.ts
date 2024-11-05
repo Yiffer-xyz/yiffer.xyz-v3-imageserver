@@ -58,12 +58,12 @@ export async function handleUpload(req: Request, res: Response) {
     console.log('⛔ Failed to upload page files to R2.');
     return res.status(500).send('Failed to upload page files to R2.');
   }
-  console.log('Upload successful!');
+  console.log('✅ Upload successful!');
 
   return res.status(200).send('Upload successful');
 }
 
-async function processThumbnailFile(
+export async function processThumbnailFile(
   file: Express.Multer.File
 ): Promise<ThumbnailForUpload[]> {
   const [w, h] = [BASE_THUMB_WIDTH, BASE_THUMB_HEIGHT];

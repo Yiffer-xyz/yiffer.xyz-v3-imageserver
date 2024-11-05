@@ -17,6 +17,7 @@ import { handlePageAdditions } from './pages-upload.ts/handle-page-additions';
 import handleAdSubmission from './ad-submission/handle-ad-submission';
 import handleRename from './comic-rename/comic-rename';
 import handleRecalculatePages from './recalculate-pages/recalculate-pages';
+import { handleChangeThumbnail } from './change-thumbnail/change-thumbnail';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -40,6 +41,8 @@ app.post(
 );
 
 app.post('/add-pages', upload.fields([{ name: 'pages' }]), handlePageAdditions);
+
+app.post('/change-thumbnail', upload.single('thumbnail'), handleChangeThumbnail);
 
 app.post('/rearrange-comic', upload.any(), handleRearrange);
 
