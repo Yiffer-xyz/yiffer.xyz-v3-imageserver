@@ -9,9 +9,9 @@ import {
   AdType,
   BASE_THUMB_HEIGHT,
   BASE_THUMB_WIDTH,
-  MULTIPLIERS_TO_MAKE_THUMBNAILS,
   isAdType,
 } from '../constants';
+import { getFileExtension } from '../utils';
 
 const legalFileMimeTypes = [
   'image/jpeg',
@@ -43,16 +43,17 @@ export default async function handleAdSubmission(req: Request, res: Response) {
     return res.status(400).send('Illegal file type');
   }
 
-  let pagesForUpload: AdFileForUpload[] = [];
+  let filesForUpload: AdFileForUpload[] = [];
 
   if (isAnimated(file)) {
-    console.log('⛔ Animated ads are not supported yet');
-    return res.status(400).send('Not implemented yet');
+    filesForUpload = await processVideoOrGif(file);
+  } else if (isVideoIllegalType(file)) {
+    return res.status(400).send('Invalid video file type');
   } else {
-    pagesForUpload = await processImageFile(file, adType);
+    filesForUpload = await processImageFile(file, adType);
   }
 
-  const adSuccess = await saveAdFunc(adId, pagesForUpload);
+  const adSuccess = await saveAdFunc(adId, filesForUpload);
   if (!adSuccess) {
     await deleteAdsFunc(adId);
     console.log('⛔ Failed to upload ad files, ID', adId);
@@ -61,6 +62,16 @@ export default async function handleAdSubmission(req: Request, res: Response) {
 
   console.log('Ad handled, ID', adId);
   res.status(200).send('Ad handled');
+}
+
+async function processVideoOrGif(file: Express.Multer.File): Promise<AdFileForUpload[]> {
+  return [
+    {
+      buffer: file.buffer,
+      multiplier: 1,
+      fileType: getFileExtension(file.originalname),
+    },
+  ];
 }
 
 async function processImageFile(
@@ -94,12 +105,20 @@ async function processImageFile(
   return filesForUpload;
 }
 
+function isGif(file: Express.Multer.File) {
+  return file.mimetype === 'image/gif';
+}
+
 function isAnimated(file: Express.Multer.File) {
   return (
     file.mimetype === 'image/gif' ||
     file.mimetype === 'video/mp4' ||
     file.mimetype === 'video/webm'
   );
+}
+
+function isVideoIllegalType(file: Express.Multer.File) {
+  return file.mimetype.startsWith('video/') && !isAnimated(file);
 }
 
 function getWidthHeightsForAdType(

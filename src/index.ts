@@ -14,10 +14,11 @@ import {
 } from './temp-logging/temp-logging-handlers';
 import { handleRearrange } from './comic-rearrange/comic-rearrange';
 import { handlePageAdditions } from './pages-upload.ts/handle-page-additions';
-import handleAdSubmission from './ad-submission/handle-ad-submission';
+import handleAdSubmission from './advertising/handle-ad-submission';
 import handleRename from './comic-rename/comic-rename';
 import handleRecalculatePages from './recalculate-pages/recalculate-pages';
 import { handleChangeThumbnail } from './change-thumbnail/change-thumbnail';
+import handleAdDelete from './advertising/handle-delete-ad';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -55,6 +56,8 @@ app.post('/submit-ad', upload.single('adFile'), handleAdSubmission);
 app.post('/update-ad', upload.single('adFile'), (req, res) =>
   handleAdSubmission(req, res)
 );
+
+app.post('/delete-ad', handleAdDelete);
 
 app.get('/:comicName/:fileName', serveFile);
 

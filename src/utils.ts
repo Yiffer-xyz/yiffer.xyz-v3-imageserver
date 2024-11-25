@@ -22,6 +22,10 @@ export function fileTypeToMime(fileType: string): string {
   }
 }
 
+export function getFileExtension(filename: string) {
+  return filename.substring(filename.lastIndexOf('.') + 1).replace('jpeg', 'jpg');
+}
+
 const currentdir = process.cwd();
 export const localDataPath = `${currentdir}/data`;
 export const localErrorLogPath = `${currentdir}/error-logs`;
