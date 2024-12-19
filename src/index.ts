@@ -51,7 +51,9 @@ app.post('/rename-comic', handleRename);
 
 app.post('/recalculate-pages', handleRecalculatePages);
 
-app.post('/submit-ad', upload.single('adFile'), handleAdSubmission);
+app.post('/submit-ad', upload.single('adFile'), (req, res) =>
+  handleAdSubmission(req, res)
+);
 
 app.post('/update-ad', upload.single('adFile'), (req, res) =>
   handleAdSubmission(req, res)

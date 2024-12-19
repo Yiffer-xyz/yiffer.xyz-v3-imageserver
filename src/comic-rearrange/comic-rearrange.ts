@@ -4,6 +4,7 @@ import { padPageNumber } from '../utils';
 import { renamePageFileInR2 } from '../file-handling/cloudflare-pagerenamer';
 import { renamePageFileLocally } from '../file-handling/local-pagerenamer';
 import { deletePageLocally } from '../file-handling/local-comic-delete';
+import { purgeComicPagesFromCache } from '../cloudflare-utils';
 
 const renamePageFileFunc =
   process.env.LOCAL_DEV === 'true' ? renamePageFileLocally : renamePageFileInR2;
@@ -47,6 +48,8 @@ export async function rearrangeComicPages(
   comicName: string,
   updatedPages: UpdatedComicPage[]
 ) {
+  const changedPageNums = new Set<number>();
+
   // Loop 1
   for (const updatedPage of updatedPages) {
     if (updatedPage.newPos === updatedPage.previousPos) {
@@ -59,6 +62,7 @@ export async function rearrangeComicPages(
         deletePageFileFunc(comicName, `${pageNumStr}.jpg`),
         deletePageFileFunc(comicName, `${pageNumStr}.webp`),
       ]);
+      changedPageNums.add(updatedPage.previousPos);
       console.log(` Deleted page ${pageNumStr}`);
     } else if (updatedPage.previousPos && updatedPage.newPos) {
       // Rename files to {prev}-temp
@@ -106,6 +110,13 @@ export async function rearrangeComicPages(
       ),
     ]);
 
+    changedPageNums.add(updatedPage.previousPos!);
+    changedPageNums.add(updatedPage.newPos!);
+
     console.log(` Renamed ${oldPageNumStr}.xxx-temp to ${newPageNumStr}.xxx`);
+  }
+
+  if (changedPageNums.size > 0) {
+    purgeComicPagesFromCache(comicName, Array.from(changedPageNums));
   }
 }

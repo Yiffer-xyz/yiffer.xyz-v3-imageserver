@@ -12,6 +12,7 @@ import {
   isAdType,
 } from '../constants';
 import { getFileExtension } from '../utils';
+import { purgeAdFromCache } from '../cloudflare-utils';
 
 const legalFileMimeTypes = [
   'image/jpeg',
@@ -59,6 +60,8 @@ export default async function handleAdSubmission(req: Request, res: Response) {
     console.log('⛔ Failed to upload ad files, ID', adId);
     return res.status(500).send('Failed to upload ad files.');
   }
+
+  await purgeAdFromCache(adId);
 
   console.log('Ad handled, ID', adId);
   res.status(200).send('Ad handled');
