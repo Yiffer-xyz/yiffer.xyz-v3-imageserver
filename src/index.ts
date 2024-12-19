@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import './file-handling/local-page-saver';
-import express, { Request, Response, Router } from 'express';
+import express, { Request, Response } from 'express';
 import { handleUpload } from './comic-upload/comic-upload';
 import multer from 'multer';
 import cors from 'cors';
@@ -37,25 +37,25 @@ app.get('/', (req: Request, res: Response) => {
 
 app.post(
   '/comic-upload',
-  upload.fields([{ name: 'pages' }, { name: 'thumbnail', maxCount: 1 }]),
+  <any>upload.fields([{ name: 'pages' }, { name: 'thumbnail', maxCount: 1 }]),
   handleUpload
 );
 
-app.post('/add-pages', upload.fields([{ name: 'pages' }]), handlePageAdditions);
+app.post('/add-pages', <any>upload.fields([{ name: 'pages' }]), handlePageAdditions);
 
-app.post('/change-thumbnail', upload.single('thumbnail'), handleChangeThumbnail);
+app.post('/change-thumbnail', <any>upload.single('thumbnail'), handleChangeThumbnail);
 
-app.post('/rearrange-comic', upload.any(), handleRearrange);
+app.post('/rearrange-comic', <any>upload.any(), handleRearrange);
 
 app.post('/rename-comic', handleRename);
 
 app.post('/recalculate-pages', handleRecalculatePages);
 
-app.post('/submit-ad', upload.single('adFile'), (req, res) =>
+app.post('/submit-ad', <any>upload.single('adFile'), (req, res) =>
   handleAdSubmission(req, res)
 );
 
-app.post('/update-ad', upload.single('adFile'), (req, res) =>
+app.post('/update-ad', <any>upload.single('adFile'), (req, res) =>
   handleAdSubmission(req, res)
 );
 
