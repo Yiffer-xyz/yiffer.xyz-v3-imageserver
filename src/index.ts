@@ -19,6 +19,7 @@ import handleRename from './comic-rename/comic-rename';
 import handleRecalculatePages from './recalculate-pages/recalculate-pages';
 import { handleChangeThumbnail } from './change-thumbnail/change-thumbnail';
 import handleAdDelete from './advertising/handle-delete-ad';
+import handlePatrons from './patreon/patronsHandler';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -67,6 +68,8 @@ app.get('/:comicName/:fileName', serveFile);
 app.post('/error-log', handleErrorLog);
 app.get('/error-log', serveErrorLogs);
 app.get('/clear-error-logs', clearLogs);
+
+app.get('/patrons', handlePatrons);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

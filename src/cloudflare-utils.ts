@@ -3,8 +3,6 @@ import { padPageNumber } from './utils';
 
 const isDev = process.env.LOCAL_DEV === 'true';
 
-console.log(process.env.CLOUDFLARE_EMAIL, process.env.CLOUDFLARE_API_KEY);
-
 const client = new Cloudflare({
   apiEmail: process.env.CLOUDFLARE_EMAIL,
   apiKey: process.env.CLOUDFLARE_API_KEY,
