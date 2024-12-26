@@ -8,7 +8,7 @@ import getPageNumsLocally from '../file-handling/local-get-pagenames';
 import getPageNamesCloudflare from '../file-handling/cloudflare-get-pagenames';
 
 const getPageNamesFunc =
-  process.env.NODE_ENV === 'development' ? getPageNumsLocally : getPageNamesCloudflare;
+  process.env.LOCAL_DEV === 'true' ? getPageNumsLocally : getPageNamesCloudflare;
 
 export default async function handleRecalculatePages(req: Request, res: Response) {
   const comicName = req.body.comicName;
@@ -61,10 +61,7 @@ export default async function handleRecalculatePages(req: Request, res: Response
 
     console.log('Finished recalculating pages.');
     return res.json({
-      newNumPages:
-        existingNumPages -
-        updatedPages.filter(page => page.isDeleted).length +
-        (isTrailingLastPage ? 1 : 0),
+      numPages: existingNumPages,
       wasChanged: updatedPages.length > 0,
     });
   } catch (err) {

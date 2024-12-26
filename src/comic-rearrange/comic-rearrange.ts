@@ -52,41 +52,45 @@ export async function rearrangeComicPages(
 
   // Loop 1
   for (const updatedPage of updatedPages) {
+    const promises: Promise<any>[] = [];
     if (updatedPage.newPos === updatedPage.previousPos) {
       continue;
     }
     if (updatedPage.isDeleted && updatedPage.previousPos) {
       // Delete files
       const pageNumStr = padPageNumber(updatedPage.previousPos);
-      await Promise.all([
-        deletePageFileFunc(comicName, `${pageNumStr}.jpg`),
-        deletePageFileFunc(comicName, `${pageNumStr}.webp`),
-      ]);
+      promises.push(deletePageFileFunc(comicName, `${pageNumStr}.jpg`));
+      promises.push(deletePageFileFunc(comicName, `${pageNumStr}.webp`));
       changedPageNums.add(updatedPage.previousPos);
       console.log(` Deleted page ${pageNumStr}`);
     } else if (updatedPage.previousPos && updatedPage.newPos) {
       // Rename files to {prev}-temp
       const oldPageNumStr = padPageNumber(updatedPage.previousPos);
-      await Promise.all([
+      promises.push(
         renamePageFileFunc(
           comicName,
           `${oldPageNumStr}.jpg`,
           comicName,
           `${oldPageNumStr}.jpg-temp`
-        ),
+        )
+      );
+      promises.push(
         renamePageFileFunc(
           comicName,
           `${oldPageNumStr}.webp`,
           comicName,
           `${oldPageNumStr}.webp-temp`
-        ),
-      ]);
+        )
+      );
       updatedPage.hasBeenTempRenamed = true;
-      console.log(` Renamed ${oldPageNumStr}.xxx to ${oldPageNumStr}.xxx-temp`);
+      console.log(` Renaming ${oldPageNumStr}.xxx to ${oldPageNumStr}.xxx-temp`);
     }
+
+    await Promise.all(promises);
   }
 
   // Loop 2
+  const promises: Promise<any>[] = [];
   for (const updatedPage of updatedPages) {
     if (!updatedPage.hasBeenTempRenamed) {
       continue;
@@ -95,7 +99,7 @@ export async function rearrangeComicPages(
     const oldPageNumStr = padPageNumber(updatedPage.previousPos!);
     const newPageNumStr = padPageNumber(updatedPage.newPos!);
 
-    await Promise.all([
+    promises.push(
       renamePageFileFunc(
         comicName,
         `${oldPageNumStr}.jpg-temp`,
@@ -107,14 +111,16 @@ export async function rearrangeComicPages(
         `${oldPageNumStr}.webp-temp`,
         comicName,
         `${newPageNumStr}.webp`
-      ),
-    ]);
+      )
+    );
 
     changedPageNums.add(updatedPage.previousPos!);
     changedPageNums.add(updatedPage.newPos!);
 
-    console.log(` Renamed ${oldPageNumStr}.xxx-temp to ${newPageNumStr}.xxx`);
+    console.log(` Renaming ${oldPageNumStr}.xxx-temp to ${newPageNumStr}.xxx`);
   }
+
+  await Promise.all(promises);
 
   if (changedPageNums.size > 0) {
     purgeComicPagesFromCache(comicName, Array.from(changedPageNums));
