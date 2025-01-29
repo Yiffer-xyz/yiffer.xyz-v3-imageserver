@@ -3,7 +3,6 @@ import sharp from 'sharp';
 import { AdFileForUpload } from '../types';
 import { saveAdFilesLocally } from '../file-handling/local-ad-saver';
 import { sendAdFilesToR2 } from '../file-handling/cloudflare-ad-saver';
-import { deleteAdsFromR2 } from '../file-handling/cloudflare-comic-delete';
 import {
   ADVERTISEMENTS,
   AdType,
@@ -13,6 +12,7 @@ import {
 } from '../constants';
 import { getFileExtension } from '../utils';
 import { purgeAdFromCache } from '../cloudflare-utils';
+import { deleteAdsFromR2 } from '../file-handling/cloudflare-ad-delete';
 
 const legalFileMimeTypes = [
   'image/jpeg',

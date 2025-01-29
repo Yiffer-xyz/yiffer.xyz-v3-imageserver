@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { deleteAdsFromR2 } from '../file-handling/cloudflare-comic-delete';
 import { deleteAdLocally } from '../file-handling/local-ad-delete';
+import { deleteAdsFromR2 } from '../file-handling/cloudflare-ad-delete';
 
 const deleteAdsFunc =
   process.env.LOCAL_DEV === 'true' ? deleteAdLocally : deleteAdsFromR2;

@@ -40,3 +40,10 @@ pm2 save
 ```
 
 [Full article](https://pm2.keymetrics.io/docs/usage/startup/).
+
+## Setup tips for new vm
+
+When setting up a new vm, here are some things to remember:
+
+- Disable firewall
+- Increase nginx' default `client_max_body_size`
