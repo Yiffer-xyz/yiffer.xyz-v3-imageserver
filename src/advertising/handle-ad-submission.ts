@@ -28,11 +28,11 @@ const saveAdFunc =
 const deleteAdsFunc = process.env.LOCAL_DEV === 'true' ? () => {} : deleteAdsFromR2;
 
 export default async function handleAdSubmission(req: Request, res: Response) {
-  console.log('Handling ad submission');
-
   const adId = req.body.adId;
   const adType = req.body.adType;
   const file = req.file;
+
+  console.log('Handling ad submission, ID:', adId, 'Type:', adType);
 
   if (!adId || !file || !adType || !isAdType(adType)) {
     console.log('⛔ Ad ID, file, and adType are required, but are:', adId, file, adType);
@@ -54,6 +54,8 @@ export default async function handleAdSubmission(req: Request, res: Response) {
     filesForUpload = await processImageFile(file, adType);
   }
 
+  console.log('Images processed. Saving...');
+
   const adSuccess = await saveAdFunc(adId, filesForUpload);
   if (!adSuccess) {
     await deleteAdsFunc(adId);
@@ -61,6 +63,7 @@ export default async function handleAdSubmission(req: Request, res: Response) {
     return res.status(500).send('Failed to upload ad files.');
   }
 
+  console.log('Purging cache...');
   await purgeAdFromCache(adId);
 
   console.log('Ad handled, ID', adId);
