@@ -72,7 +72,7 @@ async function purgeCache(filePaths: string[]) {
   console.log('Purging cloudflare cache: ', filePaths);
   for (const filePathChunk of filePathChunks) {
     const res = await client.cache.purge({
-      zone_id: process.env.CLOUDFLARE_ACCOUNT_ID as string,
+      zone_id: process.env.CLOUDFLARE_CACHE_ZONE_ID as string,
       files: filePathChunk,
     });
 
