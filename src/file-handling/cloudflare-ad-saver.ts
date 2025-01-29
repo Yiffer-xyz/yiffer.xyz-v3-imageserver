@@ -10,8 +10,8 @@ export async function sendAdFilesToR2(
   try {
     const uploadPromises = adObjects.map(({ buffer, fileType, multiplier }) => {
       const putObjectCommand = new PutObjectCommand({
-        Bucket: process.env.ADS_BUCKET_NAME,
-        Key: `${adId}-${multiplier}x.${fileType}`,
+        Bucket: process.env.COMICS_BUCKET_NAME,
+        Key: `pi/${adId}-${multiplier}x.${fileType}`,
         Body: buffer,
         ContentType: fileTypeToMime(fileType),
       });
