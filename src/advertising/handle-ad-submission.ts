@@ -64,7 +64,13 @@ export default async function handleAdSubmission(req: Request, res: Response) {
   }
 
   console.log('Purging cache...');
-  await purgeAdFromCache(adId);
+  try {
+    await purgeAdFromCache(adId);
+  } catch (error) {
+    console.error('Error purging cache:', error);
+    res.status(200).send('Ad handled');
+    return;
+  }
 
   console.log('Ad handled, ID', adId);
   res.status(200).send('Ad handled');

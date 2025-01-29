@@ -49,10 +49,10 @@ export async function purgeComicThumbnailFromCache(comicName: string) {
 
 export async function purgeAdFromCache(adId: string) {
   const fileTypes = ['webp', 'jpg', 'webm', 'mp4', 'gif'];
-  const multipliers = [1, 2, 3];
+  const multipliers = [2, 3];
   const filePaths = multipliers.flatMap(multiplier =>
     fileTypes.map(
-      fileType => `${process.env.ADS_ACCESS_PATH}/${adId}-${multiplier}x.${fileType}`
+      fileType => `${process.env.IMAGE_ACCESS_PATH}/pi/${adId}-${multiplier}x.${fileType}`
     )
   );
   await purgeCache(filePaths);
@@ -69,6 +69,7 @@ async function purgeCache(filePaths: string[]) {
     return;
   }
 
+  console.log('Purging cloudflare cache: ', filePaths);
   for (const filePathChunk of filePathChunks) {
     const res = await client.cache.purge({
       zone_id: process.env.CLOUDFLARE_ACCOUNT_ID as string,
