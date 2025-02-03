@@ -42,15 +42,17 @@ export async function handleUpload(req: Request, res: Response) {
     `Comic name: ${comicName}. Num pages: ${pageFiles?.length}. Num thumbnails: ${thumbnailFiles?.length}.`
   );
 
-  const thumbnailObjects = await processThumbnailFile(thumbnailFiles[0]);
-  console.log('Processed thumbnail.');
-  const thumbnailSuccess = await saveThumbnailFilesFunc(comicName, thumbnailObjects);
-  if (!thumbnailSuccess) {
-    await deleteComicFunc(comicName);
-    console.log('⛔ Failed to upload thumbnail files to R2.');
-    return res.status(500).send('Failed to upload thumbnail files to R2.');
+  if (thumbnailFiles && thumbnailFiles.length > 0) {
+    const thumbnailObjects = await processThumbnailFile(thumbnailFiles[0]);
+    console.log('Processed thumbnail.');
+    const thumbnailSuccess = await saveThumbnailFilesFunc(comicName, thumbnailObjects);
+    if (!thumbnailSuccess) {
+      await deleteComicFunc(comicName);
+      console.log('⛔ Failed to upload thumbnail files to R2.');
+      return res.status(500).send('Failed to upload thumbnail files to R2.');
+    }
+    console.log('Uploaded thumbnail.');
   }
-  console.log('Uploaded thumbnail.');
 
   const pageSuccess = await addPagesToComic(comicName, pageFiles);
   if (!pageSuccess) {
