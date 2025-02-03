@@ -6,6 +6,7 @@ import {
 import { padPageNumber } from '../utils';
 import getPageNumsLocally from '../file-handling/local-get-pagenames';
 import getPageNamesCloudflare from '../file-handling/cloudflare-get-pagenames';
+import { purgeAllComicPagesFromCache } from '../cloudflare-utils';
 
 const getPageNamesFunc =
   process.env.LOCAL_DEV === 'true' ? getPageNumsLocally : getPageNamesCloudflare;
@@ -58,6 +59,8 @@ export default async function handleRecalculatePages(req: Request, res: Response
         { previousPos: lastExistingPageNum, newPos: existingNumPages2, isDeleted: false },
       ]);
     }
+
+    await purgeAllComicPagesFromCache({ comicName, numPages: existingNumPages });
 
     console.log('Finished recalculating pages.');
     return res.json({

@@ -39,7 +39,7 @@ export async function handleUpload(req: Request, res: Response) {
   const pageFiles = req.files['pages'] as Express.Multer.File[];
   const thumbnailFiles = req.files['thumbnail'] as Express.Multer.File[];
   console.log(
-    `Comic name: ${comicName}. Num pages: ${pageFiles.length}. Num thumbnails: ${thumbnailFiles.length}.`
+    `Comic name: ${comicName}. Num pages: ${pageFiles?.length}. Num thumbnails: ${thumbnailFiles?.length}.`
   );
 
   const thumbnailObjects = await processThumbnailFile(thumbnailFiles[0]);

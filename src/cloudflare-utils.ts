@@ -76,8 +76,7 @@ async function purgeCache(filePaths: string[]) {
       files: filePathChunk,
     });
 
-    console.log(`Purged ${filePathChunk.length} files, response:`);
-    console.log(res);
+    console.log(`Purged ${filePathChunk.length} files, response:`, res);
   }
 }
 
