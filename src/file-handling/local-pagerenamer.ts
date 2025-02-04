@@ -7,6 +7,7 @@ export async function renamePageFileLocally(
   newComicName: string,
   newFileName: string
 ): Promise<void> {
+  console.log(`Renaming ${oldFileName} to ${newFileName}`);
   createLocalComicFolderIfNotExists(newComicName);
   const oldFilePath = `${localDataPath}/${oldComicName}/${oldFileName}`;
   const newFilePath = `${localDataPath}/${newComicName}/${newFileName}`;

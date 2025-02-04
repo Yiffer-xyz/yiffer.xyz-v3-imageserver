@@ -10,7 +10,10 @@ export async function deleteComicLocally(comicName: string) {
 
 export async function deletePageLocally(comicName: string, pageName: string) {
   const pagePath = `${localDataPath}/${comicName}/${pageName}`;
+  console.log('Deleting page', pagePath);
   if (existsSync(pagePath)) {
     rmSync(pagePath);
+  } else {
+    console.log('...but it does not exist');
   }
 }

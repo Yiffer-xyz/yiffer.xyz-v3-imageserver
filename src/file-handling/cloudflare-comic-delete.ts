@@ -20,6 +20,7 @@ export async function deleteComicFromR2(comicName: string) {
 }
 
 export async function deletePageFromR2(comicName: string, pageName: string) {
+  console.log('Deleting page', `${comicName}/${pageName}`);
   const deleteCommand = new DeleteObjectsCommand({
     Bucket: process.env.COMICS_BUCKET_NAME,
     Delete: {

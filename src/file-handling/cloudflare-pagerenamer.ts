@@ -7,6 +7,14 @@ export async function renamePageFileInR2(
   newComicName: string,
   newFileName: string
 ): Promise<void> {
+  console.log(
+    'Renaming page file in R2',
+    oldComicName,
+    oldFileName,
+    newComicName,
+    newFileName
+  );
+
   const copyCommand = new CopyObjectCommand({
     Bucket: process.env.COMICS_BUCKET_NAME,
     CopySource: `${process.env.COMICS_BUCKET_NAME}/${oldComicName}/${oldFileName}`,

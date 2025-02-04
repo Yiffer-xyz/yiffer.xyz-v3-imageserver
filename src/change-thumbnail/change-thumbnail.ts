@@ -10,10 +10,6 @@ const saveThumbnailFilesFunc =
 export async function handleChangeThumbnail(req: Request, res: Response) {
   console.log('Handling thumbnail change');
 
-  await new Promise((r, rej) => {
-    setTimeout(r, 2000);
-  });
-
   if (!req.file) {
     console.log('⛔ No file was uploaded.');
     return res.status(400).send('No file was uploaded.');

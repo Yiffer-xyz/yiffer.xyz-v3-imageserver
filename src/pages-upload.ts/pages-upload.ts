@@ -10,14 +10,18 @@ const savePageFilesFunc =
 
 export async function addPagesToComic(
   comicName: string,
-  pages: Express.Multer.File[]
+  pages: Express.Multer.File[],
+  pageNums?: number[]
 ): Promise<boolean> {
   const pageObjects: PageForUpload[] = [];
 
   console.log(`Processing ${pages.length} pages.`);
 
-  for (const file of pages) {
-    const pageNumber = getPageNumberFromFilename(file.originalname);
+  for (let i = 0; i < pages.length; i++) {
+    const file = pages[i];
+    const pageNumber = pageNums
+      ? pageNums[i]
+      : getPageNumberFromFilename(file.originalname);
     console.log(` Processing page ${pageNumber}...`);
     const pageFiles = await processPageFile(file, pageNumber);
     pageObjects.push(...pageFiles);

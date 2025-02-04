@@ -20,6 +20,8 @@ import handleRecalculatePages from './recalculate-pages/recalculate-pages';
 import { handleChangeThumbnail } from './change-thumbnail/change-thumbnail';
 import handleAdDelete from './advertising/handle-delete-ad';
 import handlePatrons from './patreon/patronsHandler';
+import { handleDeleteAndCopyStep1 } from './comic-changes-new/handleDeleteAndCopyStep1';
+import { handleRearrangeStep3 } from './comic-changes-new/handleRearrangeStep3';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -41,6 +43,9 @@ app.post(
   <any>upload.fields([{ name: 'pages' }, { name: 'thumbnail', maxCount: 1 }]),
   handleUpload
 );
+
+app.post('/delete-and-copy-step1', handleDeleteAndCopyStep1);
+app.post('/rearrange-step3', handleRearrangeStep3);
 
 app.post('/add-pages', <any>upload.fields([{ name: 'pages' }]), handlePageAdditions);
 
