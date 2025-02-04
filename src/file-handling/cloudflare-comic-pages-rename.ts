@@ -13,6 +13,7 @@ export async function renamePagesToTempInR2(comicName: string) {
   const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
 
   for (const object of objects) {
+    console.log('object', object, 'key', object.Key);
     if (!object.Key) {
       console.log('🆎 This should not happen');
       continue;
