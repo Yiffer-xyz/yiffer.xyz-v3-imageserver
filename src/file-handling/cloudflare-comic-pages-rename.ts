@@ -1,6 +1,7 @@
 import { DeleteObjectsCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import s3Client from '../s3';
 import { renamePageFileInR2 } from './cloudflare-pagerenamer';
+import { getPageNumberFromFilename } from '../comic-upload/comic-upload';
 
 export async function renamePagesToTempInR2(comicName: string) {
   const listCommand = new ListObjectsV2Command({
@@ -13,7 +14,6 @@ export async function renamePagesToTempInR2(comicName: string) {
   const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
 
   for (const object of objects) {
-    console.log('object', object, 'key', object.Key);
     if (!object.Key) {
       console.log('🆎 This should not happen');
       continue;
@@ -21,6 +21,11 @@ export async function renamePagesToTempInR2(comicName: string) {
     if (object.Key.includes('thumbnail')) {
       continue;
     }
-    await renamePageFileInR2(comicName, object.Key, comicName, object.Key + '-temp');
+    const pageNumStr = object.Key.split('/').pop();
+    if (!pageNumStr) {
+      console.log('🆎 This should not happen');
+      continue;
+    }
+    await renamePageFileInR2(comicName, pageNumStr, comicName, pageNumStr + '-temp');
   }
 }
