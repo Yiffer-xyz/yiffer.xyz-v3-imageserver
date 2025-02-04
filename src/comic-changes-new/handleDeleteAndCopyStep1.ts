@@ -14,8 +14,6 @@ export async function handleDeleteAndCopyStep1(req: Request, res: Response) {
   try {
     console.log('delete-and-copy-step1');
 
-    console.log(req.body);
-
     if (!req.body.comicName || !req.body.deletedPagesNumbers) {
       console.log('⛔ Comic name and deleted pages numbers are required.');
       return res.status(400).send('Comic name and deleted pages numbers are required.');
@@ -23,6 +21,12 @@ export async function handleDeleteAndCopyStep1(req: Request, res: Response) {
 
     const comicName = req.body.comicName as string;
     const deletedPagesNumbers: number[] = req.body.deletedPagesNumbers;
+    let skipProcessingPagesUntilIncl = req.body.skipProcessingPagesUntilIncl;
+    if (!skipProcessingPagesUntilIncl || Number.isNaN(skipProcessingPagesUntilIncl)) {
+      skipProcessingPagesUntilIncl = 0;
+    } else {
+      skipProcessingPagesUntilIncl = parseInt(skipProcessingPagesUntilIncl);
+    }
 
     // Delete pages
     if (deletedPagesNumbers && deletedPagesNumbers.length > 0) {
@@ -33,7 +37,7 @@ export async function handleDeleteAndCopyStep1(req: Request, res: Response) {
       }
     }
 
-    await renamePagesToTempFunc(comicName);
+    await renamePagesToTempFunc(comicName, skipProcessingPagesUntilIncl);
 
     console.log('Finished deleteing and renaming pages to "-temp"!');
   } catch (err) {

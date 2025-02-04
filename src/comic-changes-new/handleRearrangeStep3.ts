@@ -23,9 +23,21 @@ export async function handleRearrangeStep3(req: Request, res: Response) {
       isUnchanged: boolean;
     }[] = req.body.pageChanges;
 
+    let skipProcessingPagesUntilIncl = req.body.skipProcessingPagesUntilIncl;
+    if (!skipProcessingPagesUntilIncl || Number.isNaN(skipProcessingPagesUntilIncl)) {
+      skipProcessingPagesUntilIncl = 0;
+    } else {
+      skipProcessingPagesUntilIncl = parseInt(skipProcessingPagesUntilIncl);
+    }
+
     const pageNumsToPurge = new Set<number>();
 
     for (const change of pageChanges) {
+      if (change.originalPos <= skipProcessingPagesUntilIncl) {
+        console.log('Skipping page', change.originalPos);
+        continue;
+      }
+
       const tempFilenameJpg = `${padPageNumber(change.originalPos)}.jpg-temp`;
       const tempFilenameWebp = `${padPageNumber(change.originalPos)}.webp-temp`;
       const newFilenameJpg = `${padPageNumber(change.newPos)}.jpg`;

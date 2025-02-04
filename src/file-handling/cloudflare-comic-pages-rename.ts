@@ -3,7 +3,10 @@ import s3Client from '../s3';
 import { renamePageFileInR2 } from './cloudflare-pagerenamer';
 import { getPageNumberFromFilename } from '../comic-upload/comic-upload';
 
-export async function renamePagesToTempInR2(comicName: string) {
+export async function renamePagesToTempInR2(
+  comicName: string,
+  skipProcessingPagesUntilIncl: number
+) {
   const listCommand = new ListObjectsV2Command({
     Bucket: process.env.COMICS_BUCKET_NAME,
     Prefix: `${comicName}/`,
@@ -24,6 +27,11 @@ export async function renamePagesToTempInR2(comicName: string) {
     const pageNumStr = object.Key.split('/').pop();
     if (!pageNumStr) {
       console.log('🆎 This should not happen');
+      continue;
+    }
+    const pageNum = getPageNumberFromFilename(pageNumStr);
+    if (pageNum <= skipProcessingPagesUntilIncl) {
+      console.log('Skipping page', pageNum);
       continue;
     }
     await renamePageFileInR2(comicName, pageNumStr, comicName, pageNumStr + '-temp');
