@@ -133,7 +133,7 @@ async function processPageFile(
   ];
 }
 
-function getPageNumberFromFilename(filename: string) {
+export function getPageNumberFromFilename(filename: string) {
   const match = filename.match(/(\d+)\./);
   if (!match) {
     throw new Error(`Failed to extract page number from filename: ${filename}`);
