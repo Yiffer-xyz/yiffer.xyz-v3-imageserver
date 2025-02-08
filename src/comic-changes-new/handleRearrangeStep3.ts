@@ -32,6 +32,7 @@ export async function handleRearrangeStep3(req: Request, res: Response) {
 
     const pageNumsToPurge = new Set<number>();
 
+    const promises: Promise<void>[] = [];
     for (const change of pageChanges) {
       if (change.originalPos <= skipProcessingPagesUntilIncl) {
         console.log('Skipping page', change.originalPos);
@@ -48,9 +49,13 @@ export async function handleRearrangeStep3(req: Request, res: Response) {
         pageNumsToPurge.add(change.newPos);
       }
 
-      await renamePageFunc(comicName, tempFilenameJpg, comicName, newFilenameJpg);
-      await renamePageFunc(comicName, tempFilenameWebp, comicName, newFilenameWebp);
+      promises.push(
+        renamePageFunc(comicName, tempFilenameJpg, comicName, newFilenameJpg),
+        renamePageFunc(comicName, tempFilenameWebp, comicName, newFilenameWebp)
+      );
     }
+
+    await Promise.all(promises);
 
     if (pageNumsToPurge.size > 0) {
       purgeComicPagesFromCache(comicName, Array.from(pageNumsToPurge));

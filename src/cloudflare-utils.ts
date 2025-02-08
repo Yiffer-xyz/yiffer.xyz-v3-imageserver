@@ -27,7 +27,11 @@ export async function purgeAllComicPagesFromCache({
   await purgeCache(filePaths);
 }
 
-export async function purgeComicPagesFromCache(comicName: string, pageNumbers: number[]) {
+export async function purgeComicPagesFromCache(
+  comicName: string,
+  pageNumbers: number[],
+  purgeThumbnails?: boolean
+) {
   const filePaths = [];
   for (const pageNumber of pageNumbers) {
     filePaths.push(
@@ -35,6 +39,14 @@ export async function purgeComicPagesFromCache(comicName: string, pageNumbers: n
     );
     filePaths.push(
       `${process.env.IMAGE_ACCESS_PATH}/${comicName}/${padPageNumber(pageNumber)}.jpg`
+    );
+  }
+  if (purgeThumbnails) {
+    filePaths.push(
+      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-2x.webp`,
+      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-3x.webp`,
+      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-2x.jpg`,
+      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-3x.jpg`
     );
   }
   await purgeCache(filePaths);

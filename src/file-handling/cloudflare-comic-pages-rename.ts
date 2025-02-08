@@ -16,6 +16,7 @@ export async function renamePagesToTempInR2(
 
   const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
 
+  const promises: Promise<void>[] = [];
   for (const object of objects) {
     if (!object.Key) {
       console.log('🆎 This should not happen');
@@ -34,6 +35,9 @@ export async function renamePagesToTempInR2(
       console.log('Skipping page', pageNum);
       continue;
     }
-    await renamePageFileInR2(comicName, pageNumStr, comicName, pageNumStr + '-temp');
+    promises.push(
+      renamePageFileInR2(comicName, pageNumStr, comicName, pageNumStr + '-temp')
+    );
   }
+  await Promise.all(promises);
 }
