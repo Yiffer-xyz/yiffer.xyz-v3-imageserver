@@ -19,7 +19,6 @@ import handleRename from './comic-rename/comic-rename';
 import handleRecalculatePages from './recalculate-pages/recalculate-pages';
 import { handleChangeThumbnail } from './change-thumbnail/change-thumbnail';
 import handleAdDelete from './advertising/handle-delete-ad';
-import handlePatrons from './patreon/patronsHandler';
 import { handleDeleteAndCopyStep1 } from './comic-changes-new/handleDeleteAndCopyStep1';
 import { handleRearrangeStep3 } from './comic-changes-new/handleRearrangeStep3';
 import { handlePurgeCache } from './comic-rearrange/handle-purge-cache';
@@ -76,8 +75,6 @@ app.get('/:comicName/:fileName', serveFile);
 app.post('/error-log', handleErrorLog);
 app.get('/error-log', serveErrorLogs);
 app.get('/clear-error-logs', clearLogs);
-
-app.get('/patrons', handlePatrons);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
