@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import sharp from 'sharp';
 import { AdFileForUpload } from '../types';
-import { saveAdFilesLocally } from '../file-handling/local-ad-saver';
+import { saveAdFilesLocally } from '../file-handling/local-file-saver';
 import { sendAdFilesToR2 } from '../file-handling/cloudflare-ad-saver';
 import {
   ADVERTISEMENTS,

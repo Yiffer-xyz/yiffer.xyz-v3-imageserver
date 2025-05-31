@@ -3,7 +3,7 @@ import { deletePageFromR2 } from '../file-handling/cloudflare-comic-delete';
 import { padPageNumber } from '../utils';
 import { renamePageFileInR2 } from '../file-handling/cloudflare-pagerenamer';
 import { renamePageFileLocally } from '../file-handling/local-pagerenamer';
-import { deletePageLocally } from '../file-handling/local-comic-delete';
+import { deletePageLocally } from '../file-handling/local-file-delete';
 import { purgeComicPagesFromCache } from '../cloudflare-utils';
 
 const renamePageFileFunc =

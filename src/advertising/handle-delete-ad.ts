@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { deleteAdLocally } from '../file-handling/local-ad-delete';
+import { deleteAdLocally } from '../file-handling/local-file-delete';
 import { deleteAdsFromR2 } from '../file-handling/cloudflare-ad-delete';
 
 const deleteAdsFunc =

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { deletePageFromR2 } from '../file-handling/cloudflare-comic-delete';
-import { deletePageLocally } from '../file-handling/local-comic-delete';
+import { deletePageLocally } from '../file-handling/local-file-delete';
 import { padPageNumber } from '../utils';
 import { renamePagesToTempInR2 } from '../file-handling/cloudflare-comic-pages-rename';
 import renamePagesToTempLocally from '../file-handling/local-comic-pages-rename';

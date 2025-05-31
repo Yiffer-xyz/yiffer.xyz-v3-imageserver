@@ -1,6 +1,29 @@
 import { writeFile } from 'fs';
-import { PageForUpload, ThumbnailForUpload } from '../types';
+import { PageForUpload, ThumbnailForUpload, AdFileForUpload } from '../types';
 import { createLocalComicFolderIfNotExists, localDataPath } from '../utils';
+
+export async function saveGenericFileLocally(
+  fileObjects: { buffer: Buffer; fileType: string }[],
+  token: string
+): Promise<boolean> {
+  const uploadPromises = fileObjects.map(({ buffer, fileType }) => {
+    const path = `${localDataPath}/temp/${token}.${fileType}`;
+    return new Promise((resolve, reject) => {
+      writeFile(path, buffer, err => {
+        if (err) {
+          console.error(`Failed to save file locally: ${path}`);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  });
+
+  await Promise.all(uploadPromises);
+
+  return true;
+}
 
 export async function saveThumbnailFilesLocally(
   comicName: string,
@@ -41,6 +64,29 @@ export async function savePageFilesLocally(
       writeFile(path, buffer, err => {
         if (err) {
           console.error(`Failed to save page file locally: ${path}`);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  });
+
+  await Promise.all(uploadPromises);
+
+  return true;
+}
+
+export async function saveAdFilesLocally(
+  adId: string,
+  adObjects: AdFileForUpload[]
+): Promise<boolean> {
+  const uploadPromises = adObjects.map(({ buffer, fileType, multiplier }) => {
+    const path = `${localDataPath}/pi/${adId}-${multiplier}x.${fileType}`;
+    return new Promise((resolve, reject) => {
+      writeFile(path, buffer, err => {
+        if (err) {
+          console.error(`Failed to save ad file locally: ${path}`);
           reject(err);
         } else {
           resolve(true);

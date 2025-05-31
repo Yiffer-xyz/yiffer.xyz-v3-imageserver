@@ -3,7 +3,7 @@ import { renamePageFileInR2 } from '../file-handling/cloudflare-pagerenamer';
 import { renamePageFileLocally } from '../file-handling/local-pagerenamer';
 import { padPageNumber } from '../utils';
 import { MULTIPLIERS_TO_MAKE_THUMBNAILS } from '../constants';
-import { deleteComicLocally } from '../file-handling/local-comic-delete';
+import { deleteComicLocally } from '../file-handling/local-file-delete';
 
 const renamePageFileFunc =
   process.env.LOCAL_DEV === 'true' ? renamePageFileLocally : renamePageFileInR2;

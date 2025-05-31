@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { sendThumbnailFilesToR2 } from '../file-handling/cloudflare-page-saver';
-import { saveThumbnailFilesLocally } from '../file-handling/local-page-saver';
+import { saveThumbnailFilesLocally } from '../file-handling/local-file-saver';
 import { processThumbnailFile } from '../comic-upload/comic-upload';
 import { purgeComicThumbnailFromCache } from '../cloudflare-utils';
 
