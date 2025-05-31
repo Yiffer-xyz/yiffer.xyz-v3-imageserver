@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import './file-handling/local-page-saver';
+import './file-handling/local-file-saver';
 import express, { Request, Response } from 'express';
 import { handleUpload } from './comic-upload/comic-upload';
 import multer from 'multer';
@@ -22,6 +22,8 @@ import handleAdDelete from './advertising/handle-delete-ad';
 import { handleDeleteAndCopyStep1 } from './comic-changes-new/handleDeleteAndCopyStep1';
 import { handleRearrangeStep3 } from './comic-changes-new/handleRearrangeStep3';
 import { handlePurgeCache } from './comic-rearrange/handle-purge-cache';
+import { handleGenericFileUpload } from './generic-file-upload/handle-generic-file-upload';
+import { handleLocalDevManageFiles } from './file-handling/handle-local-dev-manage-files';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -51,6 +53,8 @@ app.post('/add-pages', <any>upload.fields([{ name: 'pages' }]), handlePageAdditi
 
 app.post('/change-thumbnail', <any>upload.single('thumbnail'), handleChangeThumbnail);
 
+app.post('/upload-file', <any>upload.single('file'), handleGenericFileUpload);
+
 app.post('/rearrange-comic', <any>upload.any(), handleRearrange);
 
 app.post('/purge-comic-cache', handlePurgeCache);
@@ -75,6 +79,9 @@ app.get('/:comicName/:fileName', serveFile);
 app.post('/error-log', handleErrorLog);
 app.get('/error-log', serveErrorLogs);
 app.get('/clear-error-logs', clearLogs);
+
+// These are PURELY relevant for local dev
+app.post('/local-dev-manage-files', handleLocalDevManageFiles);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

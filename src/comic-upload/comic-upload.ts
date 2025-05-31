@@ -9,8 +9,8 @@ import {
 import { sendThumbnailFilesToR2 } from '../file-handling/cloudflare-page-saver';
 import { PageForUpload, ThumbnailForUpload } from '../types';
 import { deleteComicFromR2 } from '../file-handling/cloudflare-comic-delete';
-import { saveThumbnailFilesLocally } from '../file-handling/local-page-saver';
-import { deleteComicLocally } from '../file-handling/local-comic-delete';
+import { saveThumbnailFilesLocally } from '../file-handling/local-file-saver';
+import { deleteComicLocally } from '../file-handling/local-file-delete';
 import { padPageNumber } from '../utils';
 import { addPagesToComic } from '../pages-upload.ts/pages-upload';
 
@@ -102,35 +102,6 @@ export async function processThumbnailFile(
   }
 
   return convertedFiles;
-}
-
-async function processPageFile(
-  file: Express.Multer.File,
-  pageNumber: number
-): Promise<PageForUpload[]> {
-  const sharpFile = sharp(file.buffer);
-  const metadata = await sharpFile.metadata();
-  const width = metadata.width;
-  if (!width) return [];
-
-  const isOverMaxWidth = width > MAX_PAGE_WIDTH;
-  const resizedSharp = isOverMaxWidth ? sharpFile.resize(MAX_PAGE_WIDTH) : sharpFile;
-
-  const webpFile = await resizedSharp.webp({ quality: 80 }).toBuffer();
-  const jpegFile = await resizedSharp.jpeg({ quality: 80 }).toBuffer();
-
-  return [
-    {
-      buffer: webpFile,
-      fileType: 'webp',
-      newFileName: makePageFilename(pageNumber, 'webp'),
-    },
-    {
-      buffer: jpegFile,
-      fileType: 'jpg',
-      newFileName: makePageFilename(pageNumber, 'jpg'),
-    },
-  ];
 }
 
 export function getPageNumberFromFilename(filename: string) {

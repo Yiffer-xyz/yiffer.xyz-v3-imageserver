@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { PageForUpload } from '../types';
 import { MAX_PAGE_WIDTH } from '../constants';
 import { padPageNumber } from '../utils';
-import { savePageFilesLocally } from '../file-handling/local-page-saver';
+import { savePageFilesLocally } from '../file-handling/local-file-saver';
 import { sendPageFilesToR2 } from '../file-handling/cloudflare-page-saver';
 
 const savePageFilesFunc =
