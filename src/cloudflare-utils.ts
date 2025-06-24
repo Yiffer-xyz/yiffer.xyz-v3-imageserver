@@ -1,5 +1,4 @@
 import Cloudflare from 'cloudflare';
-import { padPageNumber } from './utils';
 
 const isDev = process.env.LOCAL_DEV === 'true';
 
@@ -7,57 +6,6 @@ const client = new Cloudflare({
   apiEmail: process.env.CLOUDFLARE_EMAIL,
   apiKey: process.env.CLOUDFLARE_API_KEY,
 });
-
-export async function purgeAllComicPagesFromCache({
-  comicName,
-  numPages,
-}: {
-  comicName: string;
-  numPages: number;
-}) {
-  const filePaths = [];
-  for (let i = 1; i <= numPages; i++) {
-    filePaths.push(
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/${padPageNumber(i)}.webp`
-    );
-    filePaths.push(
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/${padPageNumber(i)}.jpg`
-    );
-  }
-  await purgeCache(filePaths);
-}
-
-export async function purgeComicPagesFromCache(
-  comicName: string,
-  pageNumbers: number[],
-  purgeThumbnails?: boolean
-) {
-  const filePaths = [];
-  for (const pageNumber of pageNumbers) {
-    filePaths.push(
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/${padPageNumber(pageNumber)}.webp`
-    );
-    filePaths.push(
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/${padPageNumber(pageNumber)}.jpg`
-    );
-  }
-  if (purgeThumbnails) {
-    filePaths.push(
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-2x.webp`,
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-3x.webp`,
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-2x.jpg`,
-      `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail-3x.jpg`
-    );
-  }
-  await purgeCache(filePaths);
-}
-
-export async function purgeComicThumbnailFromCache(comicName: string) {
-  await purgeCache([
-    `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail.webp`,
-    `${process.env.IMAGE_ACCESS_PATH}/${comicName}/thumbnail.jpg`,
-  ]);
-}
 
 export async function purgeAdFromCache(adId: string) {
   const fileTypes = ['webp', 'jpg', 'webm', 'mp4', 'gif'];

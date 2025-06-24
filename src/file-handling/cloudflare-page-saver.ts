@@ -1,67 +1,36 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { PageForUpload, ThumbnailForUpload } from '../types';
 import { fileTypeToMime } from '../utils';
 import s3Client from '../s3';
-import { R2_TEMP_PICTURES_FOLDER } from '../constants';
+import { R2_TEMP_FOLDER } from '../constants';
 
 export async function sendGenericFileToR2(
-  fileObjects: { buffer: Buffer; fileType: string }[],
-  token: string
+  fileObjects: { buffer: Buffer; filename: string }[]
 ): Promise<boolean> {
-  const uploadPromises = fileObjects.map(({ buffer, fileType }) => {
+  const uploadPromises = fileObjects.map(({ buffer, filename }) => {
+    const fileExtension = filename.split('.').pop() ?? 'jpg';
+    const contentType = fileTypeToMime(fileExtension);
+    console.log('  Sending file to R2:', filename, contentType);
+
     const putObjectCommand = new PutObjectCommand({
       Bucket: process.env.COMICS_BUCKET_NAME,
-      Key: `${R2_TEMP_PICTURES_FOLDER}/${token}.${fileType}`,
+      Key: `${R2_TEMP_FOLDER}/${filename}`,
       Body: buffer,
-      ContentType: fileTypeToMime(fileType),
+      ContentType: contentType,
     });
+
     return s3Client.send(putObjectCommand);
   });
 
   const results = await Promise.allSettled(uploadPromises);
-  const anyFailed = results.some(result => result.status === 'rejected');
+  const failedSaves = results.filter(result => result.status === 'rejected');
 
-  return !anyFailed;
-}
-
-export async function sendThumbnailFilesToR2(
-  comicName: string,
-  pagesObjects: ThumbnailForUpload[]
-): Promise<boolean> {
-  const uploadPromises = pagesObjects.map(
-    ({ buffer, multiplier, fileType, filenameBase }) => {
-      const putObjectCommand = new PutObjectCommand({
-        Bucket: process.env.COMICS_BUCKET_NAME,
-        Key: `${comicName}/${filenameBase}-${multiplier}x.${fileType}`,
-        Body: buffer,
-        ContentType: fileTypeToMime(fileType),
-      });
-      return s3Client.send(putObjectCommand);
+  if (failedSaves.length > 0) {
+    console.log('⛔ Failed to save files.');
+    for (const failedSave of failedSaves) {
+      console.error(failedSave.status, failedSave.reason);
     }
-  );
+    return false;
+  }
 
-  const results = await Promise.allSettled(uploadPromises);
-  const anyFailed = results.some(result => result.status === 'rejected');
-
-  return !anyFailed;
-}
-
-export async function sendPageFilesToR2(
-  comicName: string,
-  pagesObjects: PageForUpload[]
-): Promise<boolean> {
-  const uploadPromises = pagesObjects.map(({ buffer, fileType, newFileName }) => {
-    const putObjectCommand = new PutObjectCommand({
-      Bucket: process.env.COMICS_BUCKET_NAME,
-      Key: `${comicName}/${newFileName}`,
-      Body: buffer,
-      ContentType: fileTypeToMime(fileType),
-    });
-    return s3Client.send(putObjectCommand);
-  });
-
-  const results = await Promise.allSettled(uploadPromises);
-  const anyFailed = results.some(result => result.status === 'rejected');
-
-  return !anyFailed;
+  return true;
 }

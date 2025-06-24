@@ -1,10 +1,5 @@
 import { appendFileSync, existsSync, mkdirSync } from 'fs';
-import { R2_PROFILE_PHOTOS_FOLDER, R2_TEMP_PICTURES_FOLDER } from './constants';
-
-// turns 1 into 0001, 2 into 0002, etc.
-export function padPageNumber(pageNumber: number) {
-  return pageNumber.toString().padStart(4, '0');
-}
+import { R2_PROFILE_PHOTOS_FOLDER, R2_TEMP_FOLDER } from './constants';
 
 export function fileTypeToMime(fileType: string): string {
   switch (fileType) {
@@ -41,7 +36,7 @@ if (process.env.LOCAL_DEV === 'true') {
     mkdirSync(`${localDataPath}/pi`);
     console.log('Created pi directory for local dev.');
   }
-  if (!existsSync(`${localDataPath}/${R2_TEMP_PICTURES_FOLDER}`)) {
+  if (!existsSync(`${localDataPath}/${R2_TEMP_FOLDER}`)) {
     mkdirSync(`${localDataPath}/temp`);
     console.log('Created temp directory for local dev.');
   }
@@ -57,25 +52,11 @@ if (!existsSync(localErrorLogPath)) {
   console.log(`Created error log file at ${localErrorLogPath}/error-logs.json`);
 }
 
+// TODO:
+// TODO: 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
+// We need this!
 export function createLocalComicFolderIfNotExists(comicName: string) {
   if (!existsSync(`${localDataPath}/${comicName}`)) {
     mkdirSync(`${localDataPath}/${comicName}`);
   }
-}
-
-export function isValidToken(token: string | null): boolean {
-  if (!token) {
-    return false;
-  }
-  const regex = /^[a-zA-Z]{24}$/;
-  return regex.test(token);
-}
-
-export function generateToken() {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let token = '';
-  for (let i = 0; i < 24; i++) {
-    token += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return token;
 }

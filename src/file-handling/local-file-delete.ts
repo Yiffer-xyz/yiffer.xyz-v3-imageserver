@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, renameSync, rmdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, renameSync, rmdirSync, rmSync } from 'fs';
 import { localDataPath } from '../utils';
 
 export async function deleteComicLocally(comicName: string) {
@@ -41,6 +41,17 @@ export async function renameFileLocally(oldPath: string, newPath: string) {
   const oldFilePath = `${localDataPath}/${oldPath}`;
   const newFilePath = `${localDataPath}/${newPath}`;
   if (existsSync(oldFilePath)) {
+    if (newPath.startsWith('comics/')) {
+      // Make folder if it doesn't exist
+      const comicId = newPath.split('/')[1];
+      const comicPath = `${localDataPath}/comics/${comicId}`;
+      if (!existsSync(comicPath)) {
+        console.log('Creating comic folder', comicPath);
+        mkdirSync(comicPath);
+      }
+    }
     renameSync(oldFilePath, newFilePath);
+  } else {
+    console.log(`Path ${oldFilePath} does not exist`);
   }
 }

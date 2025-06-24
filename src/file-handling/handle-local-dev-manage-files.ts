@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
 import { deleteGenericFileLocally, renameFileLocally } from './local-file-delete';
-import { R2_PROFILE_PHOTOS_FOLDER, R2_TEMP_PICTURES_FOLDER } from '../constants';
 
 // Expand this as needed
 type LocalDevManageFilesBody = {
-  deletes: { fileKind: 'profile-picture'; token: string }[];
-  renames: { fileKind: 'profile-picture'; oldToken: string; newToken: string }[];
+  deletes: { path: string }[];
+  renames: { oldPath: string; newPath: string }[];
 };
 
 export async function handleLocalDevManageFiles(req: Request, res: Response) {
@@ -16,25 +15,13 @@ export async function handleLocalDevManageFiles(req: Request, res: Response) {
   const actions = req.body as LocalDevManageFilesBody;
 
   for (const action of actions.deletes) {
-    if (action.fileKind === 'profile-picture') {
-      await deleteGenericFileLocally(action.token + '.jpg');
-      await deleteGenericFileLocally(action.token + '.webp');
-      console.log(`Deleted profile picture ${action.token}`);
-    }
+    await deleteGenericFileLocally(action.path);
+    console.log(`Deleted ${action.path}`);
   }
 
   for (const action of actions.renames) {
-    if (action.fileKind === 'profile-picture') {
-      await renameFileLocally(
-        `${R2_TEMP_PICTURES_FOLDER}/${action.oldToken}.jpg`,
-        `${R2_PROFILE_PHOTOS_FOLDER}/${action.newToken}.jpg`
-      );
-      await renameFileLocally(
-        `${R2_TEMP_PICTURES_FOLDER}/${action.oldToken}.webp`,
-        `${R2_PROFILE_PHOTOS_FOLDER}/${action.newToken}.webp`
-      );
-      console.log(`Renamed profile picture ${action.oldToken} to ${action.newToken}`);
-    }
+    await renameFileLocally(action.oldPath, action.newPath);
+    console.log(`Renamed ${action.oldPath} to ${action.newPath}`);
   }
 
   return res.status(200).send('Files managed');

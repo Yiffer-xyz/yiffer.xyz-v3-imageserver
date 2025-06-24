@@ -9,8 +9,9 @@ export type AdType = 'card' | 'banner' | 'topSmall';
 
 export const PROFILE_PIC_SIZE = 400;
 
-export const R2_TEMP_PICTURES_FOLDER = 'temp';
+export const R2_TEMP_FOLDER = 'temp';
 export const R2_PROFILE_PHOTOS_FOLDER = 'profile-photos';
+export const R2_COMICS_FOLDER = 'comics';
 
 export type AdvertisementInfo = {
   name: AdType;
